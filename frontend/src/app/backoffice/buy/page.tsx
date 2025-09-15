@@ -1,0 +1,318 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Modal from "@/app/components/ui/modal";
+import {
+  showAlertConfirmDelete,
+  showAlertError,
+  showAlertSuccess,
+  showAlertWarning,
+} from "@/app/utils/sweetAlert";
+import {
+  createBuy,
+  DeleteBuy,
+  listProduct,
+  updateBuy,
+} from "@/app/services/buyService";
+import { validateCreateBuy } from "@/app/utils/validation";
+
+export default function Page() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [serial, setSerial] = useState("");
+  const [name, setName] = useState("");
+  const [release, setRelease] = useState("");
+  const [color, setColor] = useState("");
+  const [price, setPrice] = useState(0);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [remark, setRemark] = useState("");
+
+  const [products, setProducts] = useState([]); // สินค้าที่ซื้อ
+  const [id, setId] = useState(0); // id เอาไว้ Update รายการ
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await listProduct();
+      setProducts(response.data);
+    } catch (error: any) {
+      showAlertError(error.message);
+    }
+  };
+
+  const handleOpenModal = () => {
+    setIsOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsOpen(false);
+  };
+
+  const handleSave = async () => {
+    const errorValidate = validateCreateBuy(
+      serial,
+      name,
+      release,
+      color,
+      price,
+      customerName,
+      customerPhone,
+      customerAddress
+    );
+
+    if (errorValidate) {
+      return showAlertWarning(errorValidate);
+    }
+
+    try {
+      setIsLoading(true);
+      let response;
+      if (!id) {
+        response = await createBuy(
+          serial,
+          name,
+          release,
+          color,
+          price,
+          customerName,
+          customerPhone,
+          customerAddress,
+          remark
+        );
+      } else {
+        response = await updateBuy(
+          id, // ส่ง id string ไปด้วย
+          serial,
+          name,
+          release,
+          color,
+          price,
+          customerName,
+          customerPhone,
+          customerAddress,
+          remark
+        );
+      }
+
+      if (response) {
+        showAlertSuccess("บันทึกข้อมูลการซื้อ สำเร็จ");
+        fetchData();
+        handleCloseModal();
+      } else {
+        showAlertError("บันทึกข้อมูลการซื้อ ไม่สำเร็จ");
+      }
+    } catch (error: any) {
+      showAlertError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdate = async (id: string) => {
+    const product = products.find((item: any) => item.id === id);
+
+    if (!product) {
+      showAlertError("ไม่พบ ID ของรายการ");
+      return;
+    }
+    setSerial(product.serial);
+    setName(product.name);
+    setRelease(product.release);
+    setColor(product.color);
+    setPrice(product.price);
+    setCustomerName(product.customerName);
+    setCustomerPhone(product.customerPhone);
+    setCustomerAddress(product.customerAddress);
+    setRemark(product.remark);
+    setId(product.id);
+
+    handleOpenModal();
+  };
+
+  const handleRemove = async (id: string) => {
+    try {
+      const isConfirmed = await showAlertConfirmDelete();
+
+      if (!isConfirmed) return; // ถ้ากดยกเลิกก็ออกเลย
+
+      const response = await DeleteBuy(id);
+
+      if (response) {
+        fetchData();
+      }
+    } catch (error: any) {
+      showAlertError(error.message);
+      console.log("Error Delete Product :", error);
+    }
+  };
+
+  const handleClear = () => {
+    setSerial("");
+    setName("");
+    setRelease("");
+    setColor("");
+    setPrice(0);
+    setCustomerName("");
+    setCustomerPhone("");
+    setCustomerAddress("");
+    setRemark("");
+    setId(0);
+  };
+
+  return (
+    <>
+      <h1 className="content-header">รายการซื้อ</h1>
+      <div>
+        <button
+          className="btn"
+          onClick={() => {
+            handleClear();
+            handleOpenModal();
+          }}
+        >
+          <i className="fa-solid fa-plus mr-2"></i>
+          เพิ่มรายการ
+        </button>
+      </div>
+
+      <Modal title="เพิ่มรายการ" isOpen={isOpen} onClose={handleCloseModal}>
+        <label htmlFor="serial">Serial สินค้า</label>
+        <input
+          type="text"
+          placeholder="ระบุ Serial สินค้า"
+          maxLength={50}
+          value={serial}
+          onChange={(e) => setSerial(e.target.value)}
+        />
+
+        <label htmlFor="name">ชื่อสินค้า</label>
+        <input
+          type="text"
+          placeholder="ระบุชื่อสินค้า"
+          maxLength={100}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <label htmlFor="release">รุ่น</label>
+        <input
+          type="text"
+          placeholder="ระบุรุ่น"
+          maxLength={100}
+          value={release}
+          onChange={(e) => setRelease(e.target.value)}
+        />
+
+        <label htmlFor="color">สี</label>
+        <input
+          type="text"
+          placeholder="ระบุสี"
+          maxLength={50}
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+
+        <label htmlFor="price">ราคา</label>
+        <input
+          type="text"
+          placeholder="ระบุราคา"
+          maxLength={50}
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
+        />
+
+        <label htmlFor="customerName">ชื่อลูกค้า</label>
+        <input
+          type="text"
+          placeholder="ระบุชื่อลูกค้า"
+          maxLength={50}
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+        />
+
+        <label htmlFor="phone">เบอร์โทรศัพท์</label>
+        <input
+          type="text"
+          placeholder="ระบุเบอร์โทรศัพท์"
+          maxLength={50}
+          value={customerPhone}
+          onChange={(e) => setCustomerPhone(e.target.value)}
+        />
+
+        <label htmlFor="address">ที่อยู่</label>
+        <input
+          type="text"
+          placeholder="ระบุที่อยู่"
+          maxLength={200}
+          value={customerAddress}
+          onChange={(e) => setCustomerAddress(e.target.value)}
+        />
+
+        <label htmlFor="remark">หมายเหตุ</label>
+        <input
+          type="text"
+          placeholder="ระบุหมายเหตุ เพิ่มเติม"
+          maxLength={200}
+          value={remark}
+          onChange={(e) => setRemark(e.target.value)}
+        />
+
+        <div className="mt-2 block">
+          <button className="btn" onClick={handleSave} disabled={isLoading}>
+            <i className="fa-solid fa-save mr-2"></i>
+            {isLoading ? "กำลังบันทึก" : "บันทึก"}
+          </button>
+        </div>
+      </Modal>
+
+      <table className="table mt-3">
+        <thead>
+          <tr>
+            <th>serial</th>
+            <th>ชื่อสินค้า</th>
+            <th>รุ่น</th>
+            <th>สี</th>
+            <th>ราคา</th>
+            <th>ลูกค้า</th>
+            <th>เบอร์โทรศัพท์</th>
+            <th>หมายเหตุ</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((item: any) => (
+            <tr key={item.id}>
+              <td>{item.serial}</td>
+              <td>{item.name}</td>
+              <td>{item.release}</td>
+              <td>{item.color}</td>
+              <td>{item.price}</td>
+              <td>{item.customerName}</td>
+              <td>{item.customerPhone}</td>
+              <td>{item.remark || "-"}</td>
+              <td>
+                <button
+                  onClick={() => handleUpdate(item.id)}
+                  className="btn-edit mr-2"
+                >
+                  <i className="fa-solid fa-edit"></i>
+                </button>
+                <button
+                  onClick={() => handleRemove(item.id)}
+                  className="btn-delete"
+                >
+                  <i className="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
