@@ -1,7 +1,10 @@
-import { prisma } from "../configs/prismaClient";
 import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
+const prisma = new PrismaClient();
 
 export const listProduct = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   try {
     const response = await prisma.product.findMany({
       orderBy: {
@@ -15,20 +18,33 @@ export const listProduct = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({
+      statusCode: 200,
       success: true,
       message: "แสดงข้อมูลรายการสินค้า สำเร็จ",
       data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   } catch (error: any) {
     console.error("List Product Error", error);
     return res.status(500).json({
+      statusCode: 500,
       success: false,
       message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   }
 };
 
 export const createProduct = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   const {
     serial,
     name,
@@ -54,14 +70,20 @@ export const createProduct = async (req: Request, res: Response) => {
   };
 
   try {
-    const check = await prisma.product.findFirst({
+    const existingProduct = await prisma.product.findFirst({
       where: { serial: payload.serial },
     });
 
-    if (check) {
+    if (existingProduct) {
       return res.status(500).json({
+        statusCode: 500,
         success: false,
         message: "Serial นี้ถูกขายออกไปก่อนหน้านี้แล้ว",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId,
+        },
       });
     }
 
@@ -70,20 +92,33 @@ export const createProduct = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({
+      statusCode: 200,
       success: true,
-      message: "เพิ่มข้อมูลสำเร็จ",
+      message: "Create Product Successfully!",
       data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   } catch (error: any) {
     console.error("Create Product Error", error);
     return res.status(500).json({
+      statusCode: 500,
       success: false,
       message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   }
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   const {
     serial,
     name,
@@ -119,8 +154,14 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     if (existingSerial) {
       return res.status(400).json({
+        statusCode: 400,
         success: false,
         message: "หมายเลข Serial ซ้ำ",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId,
+        },
       });
     }
 
@@ -133,29 +174,48 @@ export const updateProduct = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({
+      statusCode: 200,
       success: true,
-      message: "แก้ไขข้อมูลสำเร็จ",
+      message: "Update Product Successfully!",
       data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   } catch (error: any) {
     console.error("Update Product Error", error);
     return res.status(500).json({
+      statusCode: 500,
       success: false,
       message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   }
 };
 
 export const removeProduct = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   try {
-    const check = await prisma.product.findUnique({
+    const product = await prisma.product.findUnique({
       where: { id: req.params.id },
     });
 
-    if (!check) {
+    if (!product) {
       return res.status(400).json({
+        statusCode: 400,
         success: false,
         message: "ไม่พบข้อมูลสินค้าที่ต้องการลบ",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId,
+        },
       });
     }
 
@@ -166,14 +226,26 @@ export const removeProduct = async (req: Request, res: Response) => {
     });
 
     return res.status(200).json({
+      statusCode: 200,
       success: true,
       message: `ลบข้อมูลสินค้า ${response.name} สำเร็จ`,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   } catch (error: any) {
     console.error("Remove Product Error :", error);
     return res.status(500).json({
+      statusCode: 500,
       success: false,
       message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
   }
 };

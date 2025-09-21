@@ -1,11 +1,13 @@
-import api from "../configs/axios";
+import axios from "axios";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 export const SignIn = async (username: string, password: string) => {
-  const response = await api.post("/auth/signin", {
+  const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
     username,
     password,
   });
-  return response;
+  return response.data;
 };
 
 export const SignUp = async (
@@ -15,12 +17,12 @@ export const SignUp = async (
   password: string,
   confirmPassword: string
 ) => {
-  const response = await api.post("/auth/signup", {
+  const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
     firstName,
     lastName,
     username,
     password,
     confirmPassword,
   });
-  return response;
+  return response.data;
 };

@@ -1,8 +1,21 @@
-export function validateSignIn(username: string, password: string) {
+import { timeStamp } from "console";
+
+export function validateSignIn(
+  username: string,
+  password: string,
+  requestId: string,
+  endpoint: string
+) {
   if (!username || !password) {
     return {
+      statusCode: 400,
       success: false,
       message: "กรุณาระบุข้อมูลให้ครบ",
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: endpoint,
+        requestId: requestId,
+      },
     };
   }
 
@@ -14,12 +27,20 @@ export function validateSignUp(
   lastName: string,
   username: string,
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
+  requestId: string,
+  endpoint: string  
 ) {
   if (!firstName || !lastName || !username || !password || !confirmPassword) {
     return {
+      statusCode: 400,
       success: false,
       message: "กรุณาระบุข้อมูลให้ครบถ้วน",
+      meta:{
+       timestamp: new Date().toISOString(),
+        endpoint: endpoint,
+        requestId: requestId,
+      }
     };
   }
 
@@ -38,12 +59,21 @@ export function validateCreateCompany(
   address: string,
   phone: string,
   email: string,
-  taxCode: string
+  taxCode: string,
+  requestId: string,
+  endpoint: string
+
 ) {
   if (!name || !address || !phone || !email || !taxCode) {
     return {
+      statusCode: 400,
       success: false,
       message: "กรุณาระบุข้อมูลให้ครบถ้วน",
+      meta:{
+        timestamp: new Date().toISOString(),
+        endpoint: endpoint,
+        requestId: requestId,
+      }
     };
   }
 }

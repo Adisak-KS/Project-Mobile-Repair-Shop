@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import Modal from "@/app/components/ui/modal";
-import {
-  showAlertConfirmDelete,
-  showAlertError,
-  showAlertSuccess,
-  showAlertWarning,
-} from "@/app/utils/sweetAlert";
+import { showAlertConfirmDelete } from "@/app/utils/sweetAlert";
 import {
   createBuy,
   DeleteBuy,
@@ -15,6 +11,7 @@ import {
   updateBuy,
 } from "@/app/services/buyService";
 import { validateCreateBuy } from "@/app/utils/validation";
+import { extractErrorMessage } from "@/app/utils/errorHandler";
 
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,20 +27,11 @@ export default function Page() {
   const [remark, setRemark] = useState("");
 
   const [products, setProducts] = useState([]); // สินค้าที่ซื้อ
-  const [id, setId] = useState(0); // id เอาไว้ Update รายการ
+  const [id, setId] = useState(null); // id เอาไว้ Update รายการ
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      const response = await listProduct();
-      setProducts(response.data);
-    } catch (error: any) {
-      showAlertError(error.message);
-    }
-  };
 
   const handleOpenModal = () => {
     setIsOpen(true);
@@ -51,6 +39,15 @@ export default function Page() {
 
   const handleCloseModal = () => {
     setIsOpen(false);
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await listProduct();
+      setProducts(response.data);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
+    }
   };
 
   const handleSave = async () => {
@@ -66,7 +63,7 @@ export default function Page() {
     );
 
     if (errorValidate) {
-      return showAlertWarning(errorValidate);
+      return toast.error(errorValidate);
     }
 
     try {
@@ -86,7 +83,7 @@ export default function Page() {
         );
       } else {
         response = await updateBuy(
-          id, // ส่ง id string ไปด้วย
+          id,
           serial,
           name,
           release,
@@ -99,15 +96,15 @@ export default function Page() {
         );
       }
 
-      if (response) {
-        showAlertSuccess("บันทึกข้อมูลการซื้อ สำเร็จ");
+      if (response.success) {
         fetchData();
         handleCloseModal();
+        toast.success("บันทึกข้อมูลการซื้อ สำเร็จ");
       } else {
-        showAlertError("บันทึกข้อมูลการซื้อ ไม่สำเร็จ");
+        toast.error("บันทึกข้อมูลการซื้อ ไม่สำเร็จ");
       }
-    } catch (error: any) {
-      showAlertError(error.message);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +114,7 @@ export default function Page() {
     const product = products.find((item: any) => item.id === id);
 
     if (!product) {
-      showAlertError("ไม่พบ ID ของรายการ");
+      toast.error("ไม่พบ ID ของรายการ");
       return;
     }
     setSerial(product.serial);
@@ -138,15 +135,15 @@ export default function Page() {
     try {
       const isConfirmed = await showAlertConfirmDelete();
 
-      if (!isConfirmed) return; // ถ้ากดยกเลิกก็ออกเลย
+      if (!isConfirmed) return;
 
       const response = await DeleteBuy(id);
 
-      if (response) {
+      if (response.success) {
         fetchData();
       }
-    } catch (error: any) {
-      showAlertError(error.message);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
       console.log("Error Delete Product :", error);
     }
   };
@@ -161,7 +158,7 @@ export default function Page() {
     setCustomerPhone("");
     setCustomerAddress("");
     setRemark("");
-    setId(0);
+    setId(null);
   };
 
   return (

@@ -1,27 +1,32 @@
 import { Request, Response } from "express";
-import { prisma } from "../configs/prismaClient";
-import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import { validateSignIn, validateSignUp } from "../utils/validation";
 
 dotenv.config();
-const SECRET_KEY = process.env.SECRET_KEY;
-
-if (!SECRET_KEY) {
-  throw new Error("SECRET_KEY is no defind in enviroment variables");
-}
+const prisma = new PrismaClient();
 
 export const signIn = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   const { username, password } = req.body;
 
-  const errorValidate = validateSignIn(username, password);
+  // Validate Input Data
+  const errorValidate = validateSignIn(
+    username,
+    password,
+    requestId,
+    req.originalUrl
+  );
+
   if (errorValidate) {
     return res.status(400).json(errorValidate);
   }
 
   try {
-    const user = await prisma.user.findFirst({
+    // Find user by username for SignIn
+    const user = await prisma.user.findUnique({
       where: {
         username: username,
         status: "active",
@@ -30,58 +35,80 @@ export const signIn = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({
+        statusCode: 401,
         success: false,
-        message: "User Not found",
+        message: "User not found",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId: requestId,
+        },
       });
     }
 
+    // Check Password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
+        statusCode: 401,
         success: false,
-        message: "Invalid Username or Password",
+        message: "Invalid username or password",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId: requestId,
+        },
       });
     }
 
-    // สร้าง access token (อายุสั้น) และ refresh token (อายุนาน)
-    const accessToken = jwt.sign({ id: user.id }, SECRET_KEY, {
-      expiresIn: "15m",
-    });
-    const refreshToken = jwt.sign({ id: user.id }, SECRET_KEY, {
-      expiresIn: "7d",
-    });
-
-    // เก็บ refresh token แบบ hash
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await prisma.userRefreshToken.create({
+    return res.json({
+      statusCode: 200,
+      success: true,
+      message: "SignIn Successfully",
       data: {
-        userId: user.id,
-        token: hashedRefreshToken,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        user: {
+          userId: user.id,
+          userFirstName: user.firstName,
+          userLastName: user.lastName,
+          username: user.username,
+          level: user.level,
+          status: user.status,
+        },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId: requestId,
       },
     });
-
-    return res.json({
-      success: true,
-      message: "Login successful",
-      accessToken,
-      refreshToken,
-    });
   } catch (error: any) {
-    console.error("signIn error : ", error);
-    return res.status(500).json({ success: false, message: error.message });
+    console.error(`[${requestId}] signIn error:`, error);
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: "Internal Server Error",
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
   }
 };
 
 export const signUp = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
   const { firstName, lastName, username, password, confirmPassword } = req.body;
 
+  //  Validate Input Data
   const errorValidate = validateSignUp(
     firstName,
     lastName,
     username,
     password,
-    confirmPassword
+    confirmPassword,
+    requestId,
+    req.originalUrl
   );
 
   if (errorValidate) {
@@ -89,22 +116,28 @@ export const signUp = async (req: Request, res: Response) => {
   }
 
   try {
-    // ตรวจสอบ username ซ้ำ
+    //  Check if username already exists
     const existingUser = await prisma.user.findFirst({
       where: { username },
     });
 
     if (existingUser) {
       return res.status(409).json({
+        statusCode: 409,
         success: false,
         message: "ไม่สามารถใช้ Username นี้ได้",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId,
+        },
       });
     }
 
-    // เข้ารหัส password
+    // Encrypt Password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // สร้างผู้ใช้ใหม่
+    // Create New User
     const newUser = await prisma.user.create({
       data: {
         firstName,
@@ -115,6 +148,7 @@ export const signUp = async (req: Request, res: Response) => {
     });
 
     return res.status(201).json({
+      statusCode: 201,
       success: true,
       message: "สมัครสมาชิกสำเร็จ",
       data: {
@@ -125,9 +159,24 @@ export const signUp = async (req: Request, res: Response) => {
         createdAt: newUser.createdAt,
         updatedAt: newUser.updatedAt,
       },
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
     });
+
   } catch (error: any) {
     console.error("signUp error : ", error);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
   }
 };

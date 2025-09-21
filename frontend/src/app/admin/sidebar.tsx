@@ -20,38 +20,38 @@ export default function Sidebar() {
       </div>
       <div className="p-5 text-white text-xl flex flex-col gap-2">
         <div className="hover:bg-blue-700">
-          <Link href="/backoffice/dashboard">
+          <Link href="/admin/dashboard">
             <i className="fa-solid fa-gauge mr-2 w-5 text-center"></i>
             Dashboard
           </Link>
         </div>
         <div>
-          <Link href="/backoffice/buy">
+          <Link href="/admin/buy">
             <i className="fa-solid fa-basket-shopping mr-2 w-5 text-center"></i>
             Buy
           </Link>
         </div>
         <div>
-          <Link href="/backoffice/sell">
+          <Link href="/admin/sell">
             <i className="fa-solid fa-dollar-sign mr-2 w-5 text-center"></i>
             Sell
           </Link>
         </div>
         <div>
-          <Link href="/backoffice/repair">
+          <Link href="/admin/repair">
             <i className="fa-solid fa-screwdriver-wrench mr-2 w-5 text-center"></i>
             Repair
           </Link>
         </div>
         <div>
-          <Link href="/backoffice/company">
+          <Link href="/admin/company">
             <i className="fa-solid fa-building mr-2 w-5 text-center"></i>
             Company
           </Link>
         </div>
 
         <div>
-          <Link href="/backoffice/user">
+          <Link href="/admin/user">
             <i className="fa-solid fa-user-group mr-2 w-5 text-center"></i>
             User
           </Link>

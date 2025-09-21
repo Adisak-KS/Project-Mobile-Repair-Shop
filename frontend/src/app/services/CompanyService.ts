@@ -1,15 +1,10 @@
-import api from "../configs/axios";
+import axios from "axios";
+const API_BASE_URL =
+  process.env.EXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 export const listCompany = async () => {
-  try {
-    const response = await api.get("/company/list");
-    return response.data;
-  } catch (error: any) {
-    console.error("List Company Error:", error?.response?.data || error);
-    throw new Error(
-      error?.response?.data?.message || "Failed to fetch Company List"
-    );
-  }
+  const response = await axios.get(`${API_BASE_URL}/company/list`);
+  return response.data;
 };
 
 export const createCompany = async (
@@ -19,19 +14,12 @@ export const createCompany = async (
   email: string,
   taxCode: string
 ) => {
-  try {
-    const response = await api.post("/company/create", {
-      name,
-      address,
-      phone,
-      email,
-      taxCode,
-    });
-    return response;
-  } catch (error: any) {
-    console.error("Create Company Error:", error?.response?.data || error);
-    throw new Error(
-      error?.response?.data?.message || "Failed to create company"
-    );
-  }
+  const response = await axios.post(`${API_BASE_URL}/company/create`, {
+    name,
+    address,
+    phone,
+    email,
+    taxCode,
+  });
+  return response.data;
 };

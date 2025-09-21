@@ -1,14 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import CompanyForm from "@/app/components/forms/CompanyForm";
 import { createCompany, listCompany } from "@/app/services/CompanyService";
-import {
-  showAlertError,
-  showAlertSuccess,
-  showAlertWarning,
-} from "@/app/utils/sweetAlert";
+import { extractErrorMessage } from "@/app/utils/errorHandler";
 import { validateCreateCompany } from "@/app/utils/validation";
-import { useEffect, useState } from "react";
 
 export default function Page() {
   const [name, setName] = useState("");
@@ -31,8 +28,9 @@ export default function Page() {
       setEmail(response.data.email);
       setTaxCode(response.data.taxCode);
       console.log(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("List Company Error: ", error);
+      toast.error(extractErrorMessage(error));
     }
   };
 
@@ -46,7 +44,7 @@ export default function Page() {
     );
 
     if (errorValidate) {
-      showAlertWarning(errorValidate);
+      toast.error(errorValidate);
       return;
     }
 
@@ -61,12 +59,12 @@ export default function Page() {
       );
 
       if (response) {
-        showAlertSuccess("บันทึกข้อมูลเรียบร้อย");
+        toast.success("บันทึกข้อมูลเรียบร้อย");
       } else {
-        showAlertError("บันทึกข้อมูลบริษัท ไม่สำเร็จ");
+        toast.error("บันทึกข้อมูลบริษัท ไม่สำเร็จ");
       }
-    } catch (error: any) {
-      showAlertError(error.message);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

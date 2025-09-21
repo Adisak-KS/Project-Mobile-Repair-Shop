@@ -1,6 +1,6 @@
 import Sidebar from "./sidebar";
 
-export default function BackOfficeLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;

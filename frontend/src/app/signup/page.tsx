@@ -10,6 +10,8 @@ import { SignUp } from "../services/authService";
 import { useRouter } from "next/navigation";
 import SignUpForm from "../components/forms/SignUpForm";
 import { validateSignUp } from "../utils/validation";
+import { extractErrorMessage } from "../utils/errorHandler";
+import toast from "react-hot-toast";
 
 export default function Page() {
   const [firstName, setFirstName] = useState("");
@@ -44,15 +46,15 @@ export default function Page() {
         confirmPassword
       );
 
-      if (response.status === 201) {
+      if (response.success) {
         // console.log("สมัครสมาชิกสำเร็จ", response.data);
-        showAlertSuccess("สมัครสมาชิกสำเร็จ");
+        toast.success("สมัครสมาชิกสำเร็จ");
         router.push("/signin");
       } else {
-        showAlertError("สมัครสมาชิกไม่สำเร็จ");
+        toast.error("สมัครสมาชิกไม่สำเร็จ");
       }
-    } catch (error: any) {
-      showAlertError(error.message);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

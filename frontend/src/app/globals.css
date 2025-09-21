@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+
+* {
+  font-family: var(--font-prompt), var(--font-roboto), ui-sans-serif;
+  font-size: 16px;
+}
+
+
 .signin-container,
 .signup-container {
   @apply flex justify-center items-center h-screen;
@@ -16,7 +23,7 @@
 }
 
 label {
-  @apply font-bold;
+  @apply font-semibold;
 }
 
 input {
@@ -57,7 +64,7 @@ body {
 }
 
 .table tbody td {
-  @apply p-3 text-left bg-gray-100 ;
+  @apply p-3 text-left bg-gray-100;
 }
 
 .btn-edit {

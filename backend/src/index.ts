@@ -13,14 +13,13 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
-const port = process.env.PORT || 3001;
-const API_BASE_PATH = "/api/v1/";
+const PORT = process.env.PORT || 3001;
 
-// ใช้ router ที่ import มา
-app.use(`${API_BASE_PATH}auth`, authRoutes);
-app.use(`${API_BASE_PATH}company`, companyRoutes);
-app.use(`${API_BASE_PATH}buy`, productRoutes);
+// ใช้ router ที่ imPORT มา
+app.use('/api/v1', authRoutes);
+app.use('/api/v1', companyRoutes);
+app.use('/api/v1', productRoutes);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port} : http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on PORT ${PORT} : http://localhost:${PORT}`);
 });

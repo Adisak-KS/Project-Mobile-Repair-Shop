@@ -1,15 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SignIn } from "../services/authService";
 import SignInForm from "../components/forms/SignInForm";
 import { validateSignIn } from "../utils/validation";
-import {
-  showAlertError,
-  showAlertSuccess,
-  showAlertWarning,
-} from "../utils/sweetAlert";
-import { setAccessToken, setRefreshToken } from "../services/tokenService";
-import { useRouter } from "next/navigation";
+import { extractErrorMessage } from "../utils/errorHandler";
+import toast from "react-hot-toast";
 
 export default function Page() {
   const [username, setUsername] = useState("");
@@ -20,7 +16,7 @@ export default function Page() {
   const handleSignIn = async () => {
     const errorValidateMessage = validateSignIn(username, password);
     if (errorValidateMessage) {
-      showAlertWarning(errorValidateMessage);
+      toast.error(errorValidateMessage);
       return;
     }
 
@@ -28,20 +24,14 @@ export default function Page() {
       setIsLoading(true);
 
       const response = await SignIn(username, password);
-      if (
-        response.data.success === true &&
-        response.data.accessToken &&
-        response.data.refreshToken
-      ) {
-        setAccessToken(response.data.accessToken);
-        setRefreshToken(response.data.refreshToken);
-        showAlertSuccess(`เข้าใช้งานด้วย ${username} สำเร็จ`);
-        router.push("/backoffice/dashboard");
+      if (response.success) {
+        toast.success(`เข้าใช้งานด้วย ${username} สำเร็จ`);
+        router.push("/admin/dashboard");
       } else {
-        showAlertError("เข้าสู่ระบบไม่สำเร็จ");
+        toast.error(response.message || "เข้าสู่ระบบไม่สำเร็จ");
       }
-    } catch (error: any) {
-      showAlertError(error?.response?.data?.message || error.message);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

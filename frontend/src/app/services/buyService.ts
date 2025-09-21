@@ -1,13 +1,10 @@
-import api from "../configs/axios";
+import axios from "axios";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 export const listProduct = async () => {
-  try {
-    const response = await api.get("/buy/list");
-    return response.data;
-  } catch (error: any) {
-    console.error("List Buy Error :", error?.response?.data || error);
-    throw new Error(error?.response?.data?.message || "Failed to list buy");
-  }
+  const response = await axios.get(`${API_BASE_URL}/buy/list`);
+  return response.data;
 };
 
 export const createBuy = async (
@@ -21,24 +18,19 @@ export const createBuy = async (
   customerAddress: string,
   remark: string
 ) => {
-  try {
-    const response = await api.post("/buy/create", {
-      serial,
-      name,
-      release,
-      color,
-      price,
-      customerName,
-      customerPhone,
-      customerAddress,
-      remark,
-    });
+  const response = await axios.post(`${API_BASE_URL}/buy/create`, {
+    serial,
+    name,
+    release,
+    color,
+    price,
+    customerName,
+    customerPhone,
+    customerAddress,
+    remark,
+  });
 
-    return response.data;
-  } catch (error: any) {
-    console.error("Create Buy Error:", error?.response?.data || error);
-    throw new Error(error?.response?.data?.message || "Failed to create buy");
-  }
+  return response.data;
 };
 
 export const updateBuy = async (
@@ -53,32 +45,21 @@ export const updateBuy = async (
   customerAddress: string,
   remark: string
 ) => {
-  try {
-    const response = await api.put(`/buy/update/${id}`, {
-      serial,
-      name,
-      release,
-      color,
-      price,
-      customerName,
-      customerPhone,
-      customerAddress,
-      remark,
-    });
-
-    return response.data;
-  } catch (error: any) {
-    console.error("Update Buy Error :", error?.response?.data || error);
-    throw new Error(error?.response?.data?.message || "Failed to Update Buy");
-  }
+  const response = await axios.put(`${API_BASE_URL}/buy/update/${id}`, {
+    serial,
+    name,
+    release,
+    color,
+    price,
+    customerName,
+    customerPhone,
+    customerAddress,
+    remark,
+  });
+  return response.data;
 };
 
 export const DeleteBuy = async (id: string) => {
-  try {
-    const response = await api.delete(`/buy/remove/${id}`);
-    return response.data;
-  } catch (error: any) {
-    console.error("Delete Buy Error :", error?.response?.data || error);
-    throw new Error(error?.response?.data?.message || "Failed to delete Buy");
-  }
+  const response = await axios.delete(`${API_BASE_URL}/buy/remove/${id}`);
+  return response.data;
 };
