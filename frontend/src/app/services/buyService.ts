@@ -16,7 +16,8 @@ export const createBuy = async (
   customerName: string,
   customerPhone: string,
   customerAddress: string,
-  remark: string
+  remark: string,
+  qty: number,
 ) => {
   const response = await axios.post(`${API_BASE_URL}/buy/create`, {
     serial,
@@ -28,6 +29,7 @@ export const createBuy = async (
     customerPhone,
     customerAddress,
     remark,
+    qty,
   });
 
   return response.data;

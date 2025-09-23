@@ -55,10 +55,11 @@ export const createProduct = async (req: Request, res: Response) => {
     customerPhone,
     customerAddress,
     remark,
+    qty,
   } = req.body;
 
   const payload = {
-    serial: serial,
+    serial: serial || null,
     name: name,
     release: release,
     color: color,
@@ -70,15 +71,11 @@ export const createProduct = async (req: Request, res: Response) => {
   };
 
   try {
-    const existingProduct = await prisma.product.findFirst({
-      where: { serial: payload.serial },
-    });
-
-    if (existingProduct) {
-      return res.status(500).json({
-        statusCode: 500,
+    if (qty > 1000) {
+      return res.status(400).json({
+        statusCode: 400,
         success: false,
-        message: "Serial นี้ถูกขายออกไปก่อนหน้านี้แล้ว",
+        message: "Qty must be less than 1000",
         meta: {
           timestamp: new Date().toISOString(),
           endpoint: req.originalUrl,
@@ -87,15 +84,27 @@ export const createProduct = async (req: Request, res: Response) => {
       });
     }
 
-    const response = await prisma.product.create({
-      data: payload,
-    });
+    let responses = [];
+    for (let i = 0; i < qty; i++) {
+      const data = { ...payload };
+
+      if (i === 0) {
+        // ตัวแรกเก็บ serial ที่ user กรอก
+        data.serial = serial || null;
+      } else {
+        // ตัวที่เหลือ serial ว่าง
+        data.serial = null;
+      }
+
+      const response = await prisma.product.create({ data });
+      responses.push(response);
+    }
 
     return res.status(200).json({
       statusCode: 200,
       success: true,
       message: "Create Product Successfully!",
-      data: response,
+      data: responses,
       meta: {
         timestamp: new Date().toISOString(),
         endpoint: req.originalUrl,
@@ -228,7 +237,7 @@ export const removeProduct = async (req: Request, res: Response) => {
     return res.status(200).json({
       statusCode: 200,
       success: true,
-      message: `ลบข้อมูลสินค้า ${response.name} สำเร็จ`,
+      message: `Delete ${response.name} Successfully`,
       meta: {
         timestamp: new Date().toISOString(),
         endpoint: req.originalUrl,

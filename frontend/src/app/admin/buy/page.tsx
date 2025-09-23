@@ -12,6 +12,7 @@ import {
 } from "@/app/services/buyService";
 import { validateCreateBuy } from "@/app/utils/validation";
 import { extractErrorMessage } from "@/app/utils/errorHandler";
+import { Numans } from "next/font/google";
 
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +29,7 @@ export default function Page() {
 
   const [products, setProducts] = useState([]); // สินค้าที่ซื้อ
   const [id, setId] = useState(null); // id เอาไว้ Update รายการ
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
     fetchData();
@@ -79,7 +81,8 @@ export default function Page() {
           customerName,
           customerPhone,
           customerAddress,
-          remark
+          remark,
+          qty
         );
       } else {
         response = await updateBuy(
@@ -99,9 +102,9 @@ export default function Page() {
       if (response.success) {
         fetchData();
         handleCloseModal();
-        toast.success("บันทึกข้อมูลการซื้อ สำเร็จ");
+        toast.success(response.message);
       } else {
-        toast.error("บันทึกข้อมูลการซื้อ ไม่สำเร็จ");
+        toast.error(response.message);
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
@@ -257,6 +260,15 @@ export default function Page() {
           maxLength={200}
           value={remark}
           onChange={(e) => setRemark(e.target.value)}
+        />
+
+        <label htmlFor="qty">จำนวนสินค้า</label>
+        <input
+          type="number"
+          placeholder="ระบบจำนวน"
+          min={1}
+          value={qty}
+          onChange={(e) => setQty(Number(e.target.value))}
         />
 
         <div className="mt-2 block">
