@@ -60,7 +60,6 @@ export function validateCreateBuy(
   customerAddress: string
 ): string | null {
   if (
-    !serial ||
     !name ||
     !release ||
     !color ||

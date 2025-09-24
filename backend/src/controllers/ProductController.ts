@@ -140,32 +140,16 @@ export const updateProduct = async (req: Request, res: Response) => {
     remark,
   } = req.body;
 
-  const payload = {
-    serial: serial,
-    name: name,
-    release: release,
-    color: color,
-    price: Number(price),
-    customerName: customerName,
-    customerPhone: customerPhone,
-    customerAddress: customerAddress,
-    remark: remark ?? "",
-  };
-
   try {
-    // Check Serial
-    const existingSerial = await prisma.product.findFirst({
-      where: {
-        serial: serial,
-        NOT: { id: req.params.id },
-      },
+    const product = await prisma.product.findUnique({
+      where: { id: req.params.id },
     });
 
-    if (existingSerial) {
-      return res.status(400).json({
-        statusCode: 400,
+    if (!product) {
+      return res.status(404).json({
+        statusCode: 404,
         success: false,
-        message: "หมายเลข Serial ซ้ำ",
+        message: "Product not found",
         meta: {
           timestamp: new Date().toISOString(),
           endpoint: req.originalUrl,
@@ -176,7 +160,17 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     // Update product
     const response = await prisma.product.update({
-      data: payload,
+      data: {
+        serial: serial ?? "",
+        name: name,
+        release: release,
+        color: color,
+        price: Number(price),
+        customerName: customerName,
+        customerPhone: customerPhone,
+        customerAddress: customerAddress,
+        remark: remark ?? "",
+      },
       where: {
         id: req.params.id,
       },

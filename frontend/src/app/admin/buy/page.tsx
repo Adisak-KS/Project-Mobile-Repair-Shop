@@ -162,6 +162,7 @@ export default function Page() {
     setCustomerAddress("");
     setRemark("");
     setId(null);
+    setQty(1);
   };
 
   return (
