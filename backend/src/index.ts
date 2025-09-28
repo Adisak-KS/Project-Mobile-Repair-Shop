@@ -5,6 +5,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route";
 import companyRoutes from "./routes/company.route";
 import productRoutes from "./routes/product.route";
+import userRoutes from "./routes/user.route";
 
 // Middleware
 dotenv.config();
@@ -16,9 +17,10 @@ app.use(express.json());
 const PORT = process.env.PORT || 3001;
 
 // ใช้ router ที่ imPORT มา
-app.use('/api/v1', authRoutes);
-app.use('/api/v1', companyRoutes);
-app.use('/api/v1', productRoutes);
+app.use("/api/v1", authRoutes);
+app.use("/api/v1", companyRoutes);
+app.use("/api/v1", productRoutes);
+app.use("/api/v1", userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT} : http://localhost:${PORT}`);

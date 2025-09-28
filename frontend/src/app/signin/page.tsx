@@ -25,6 +25,10 @@ export default function Page() {
 
       const response = await SignIn(username, password);
       if (response.success) {
+        // เก็บ token
+        localStorage.setItem("token", response.data.token);
+        console.log(response.data.token);
+
         toast.success(`เข้าใช้งานด้วย ${username} สำเร็จ`);
         router.push("/admin/dashboard");
       } else {

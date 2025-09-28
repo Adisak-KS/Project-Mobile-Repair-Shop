@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import { validateSignIn, validateSignUp } from "../utils/validation";
@@ -26,7 +27,7 @@ export const signIn = async (req: Request, res: Response) => {
 
   try {
     // Find user by username for SignIn
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         username: username,
         status: "active",
@@ -61,6 +62,12 @@ export const signIn = async (req: Request, res: Response) => {
       });
     }
 
+    if (!process.env.SECRET_KEY) {
+      throw new Error("SECRET_KEY is not defined in environment variables");
+    }
+    const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
+      expiresIn: "7d",
+    });
     return res.json({
       statusCode: 200,
       success: true,
@@ -74,6 +81,7 @@ export const signIn = async (req: Request, res: Response) => {
           level: user.level,
           status: user.status,
         },
+        token,
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -165,7 +173,6 @@ export const signUp = async (req: Request, res: Response) => {
         requestId,
       },
     });
-
   } catch (error: any) {
     console.error("signUp error : ", error);
     return res.status(500).json({

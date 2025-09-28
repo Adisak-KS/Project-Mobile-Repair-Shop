@@ -20,6 +20,33 @@ begin
 end;
 
 
+procedure THOSxPBookstoreProductEntryForm.cxButtonDeleteClick(Sender: TObject);
+begin
+  if MessageDlg('ยืนยันการลบ', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    DoDeleteData;
+    Close;
+  end;
+end;
+
+
+procedure THOSxPBookstoreProductListForm.cxButtonLogClick(Sender: TObject);
+begin
+  SafeLoadPackage('HOSxPUserManagerPackage.bpl');
+  ExecuteRTTIFunction
+    ('HOSxPUserManagerLogViewerFormUnit.THOSxPUserManagerLogViewerForm',
+    'DoShowForm', ['bookstore_products', '']);
+end;
+
+
+procedure THOSxPBookstoreProductListForm.cxButtonExcelClick(Sender: TObject);
+begin
+  if ProductCDS.RecordCount = 0 then
+    Exit;
+  DoExportCxGridToExcel(cxGrid1);
+end;
+
+
 // Entry Form
  
  
@@ -42,6 +69,17 @@ end;
 
 
 uses BMSApplicationUtil, HOSxPDMU, siauto;
+
+
+
+procedure THOSxPBookstoreProductEntryForm.cxButtonLogClick(Sender: TObject);
+begin
+  SafeLoadPackage('HOSxPUserManagerPackage.bpl');
+  ExecuteRTTIFunction
+    ('HOSxPUserManagerLogViewerFormUnit.THOSxPUserManagerLogViewerForm',
+    'DoShowForm', ['bookstore_products', IntToStr(FProductID)]);
+end;
+
 
 // 1. Set Customer Id
 procedure THOSxPPharmacyCustomerEntryForm.SetCustomerID(const Value: integer);
@@ -250,6 +288,35 @@ end;
     [customerCDS.FieldByName('pharmacy_customer_id').AsInteger]);
   DoRefreshData;
 
+
+
+
+
+
+procedure THOSxPPharmacyOrderListForm.DoRefreshData;
+var
+  date, name: string;
+begin
+  if (cxDateEdit1.Text <> '') AND (cxDateEdit2.Text <> '') then
+  begin
+    date := ' AND po.pharmacy_order_date BETWEEN ' +
+      QuotedStr(FormatDateTime('yyyy-mm-dd', cxDateEdit1.date)) + 'AND' +
+      QuotedStr(FormatDateTime('yyyy-mm-dd', cxDateEdit2.date));
+  end;
+
+  if cxTextEdit1.Text <> '' then
+  begin
+    name := ' AND pc.pharmacy_customer_name LIKE ' +
+      QuotedStr('%' + cxTextEdit1.Text + '%') +
+      'OR pe.pharmacy_employee_name LIKE ' +
+      QuotedStr('%' + cxTextEdit1.Text + '%');
+  end;
+
+  orderCDS.Data := HOSxP_GetDataSet('SELECT * FROM pharmacy_order po ' +
+    'LEFT JOIN pharmacy_employee pe on pe.pharmacy_employee_id = po.pharmacy_employee_id '
+    + 'LEFT JOIN pharmacy_customer pc on po.pharmacy_customer_id = pc.pharmacy_customer_id '
+    + 'WHERE 1=1' + date + name);
+end;
 
 
 
