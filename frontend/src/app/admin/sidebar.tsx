@@ -59,9 +59,15 @@ export default function Sidebar() {
         return;
       }
 
-      const token = localStorage.getItem('token');
-      const authHeader = { 'Authorization' : `Bearer ${token}`}
-      const response = await updateUser(firstName, username, password, level, authHeader);
+      const token = localStorage.getItem("token");
+      const authHeader = { Authorization: `Bearer ${token}` };
+      const response = await updateUser(
+        firstName,
+        username,
+        password,
+        level,
+        authHeader
+      );
       if (response.success) {
         fetchData();
         toast.success(response.message);
@@ -184,9 +190,9 @@ export default function Sidebar() {
           />
 
           <div className="mt-3">
-            <button onClick={handleSave} className="btn">
+            <button onClick={handleSave} disabled={isLoading} className="btn">
               <i className="fa fa-save mr-2"></i>
-              Save
+              {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         </div>
