@@ -53,3 +53,31 @@ export const showAlertConfirmDelete = async () => {
     return false;
   }
 };
+
+export const showAlertConfirmSell = async () => {
+  const result = await Swal.fire({
+    title: "ยืนยันการขาย ?",
+    text: "ยืนยันการขาย",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    // cancelButtonColor: "#3085d6",
+    confirmButtonText: "ยืนยัน",
+    cancelButtonText: "ยกเลิก",
+  });
+
+  if (result.isConfirmed) {
+    // กดยืนยัน
+    Swal.fire({
+      icon: "success",
+      title: "ขายสินค้าสำเร็จ",
+      text: "ข้อมูลถูกบันทึกเรียบร้อยแล้ว",
+      timer: 3000,
+      showConfirmButton: false,
+    });
+    return true;
+  } else {
+    // กดยกเลิก
+    return false;
+  }
+};

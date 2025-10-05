@@ -20,3 +20,8 @@ export const removeSell = async (id: number) => {
   const response = await axios.delete(`${API_BASE_URL}/sell/remove/${id}`);
   return response.data;
 };
+
+export const confirmSell = async () => {
+  const response = await axios.get(`${API_BASE_URL}/sell/confirm`);
+  return response.data;
+};

@@ -283,15 +283,15 @@ export default function Page() {
       <table className="table mt-3">
         <thead>
           <tr>
-            <th>serial</th>
-            <th>ชื่อสินค้า</th>
-            <th>รุ่น</th>
-            <th>สี</th>
-            <th>ราคา</th>
-            <th>ลูกค้า</th>
-            <th>เบอร์โทรศัพท์</th>
-            <th>หมายเหตุ</th>
-            <th>Action</th>
+            <th className="text-left">serial</th>
+            <th className="text-left">ชื่อสินค้า</th>
+            <th className="text-left">รุ่น</th>
+            <th className="text-left">สี</th>
+            <th className="text-right pr-0">ราคา</th>
+            <th className="text-left">ลูกค้า</th>
+            <th className="text-left">เบอร์โทรศัพท์</th>
+            <th className="text-left">หมายเหตุ</th>
+            <th className="w-[110px]">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -301,7 +301,7 @@ export default function Page() {
               <td>{item.name}</td>
               <td>{item.release}</td>
               <td>{item.color}</td>
-              <td>{item.price}</td>
+              <td className="text-right">{item.price.toLocaleString()}</td>
               <td>{item.customerName}</td>
               <td>{item.customerPhone}</td>
               <td>{item.remark || "-"}</td>

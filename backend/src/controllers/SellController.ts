@@ -164,3 +164,41 @@ export const removeSell = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const confirmSell = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
+  try {
+    const response = await prisma.sell.updateMany({
+      where: {
+        status: "Pending",
+      },
+      data: {
+        status: "Paid",
+        payDate: new Date(),
+      },
+    });
+
+    return res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "Confirm product successfully!",
+      data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  }
+};
