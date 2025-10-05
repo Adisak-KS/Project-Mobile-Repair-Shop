@@ -22,14 +22,16 @@ export const createSell = async (req: Request, res: Response) => {
 
   try {
     const product = await prisma.product.findFirst({
-      where: { serial: serial },
+      where: { serial: serial,
+        status: 'instock'
+       },
     });
 
     if (!product) {
       return res.status(404).json({
         statusCode: 404,
         success: false,
-        message: "Serial not found",
+        message: "Serial not found in stock",
         meta: {
           timestamp: new Date().toISOString(),
           endpoint: req.originalUrl,
@@ -81,8 +83,16 @@ export const listSell = async (req: Request, res: Response) => {
       orderBy: {
         id: "desc",
       },
-      include: {
-        product: true,
+
+      select: {
+        product: {
+          select: {
+            serial: true,
+            name: true,
+          },
+        },
+        id: true,
+        price: true,
       },
     });
 
@@ -168,6 +178,23 @@ export const removeSell = async (req: Request, res: Response) => {
 export const confirmSell = async (req: Request, res: Response) => {
   const requestId = uuidv4();
   try {
+    const sells = await prisma.sell.findMany({
+      where: {
+        status: "pending",
+      },
+    });
+
+    for (const sell of sells) {
+      await prisma.product.update({
+        data: {
+          status: "Sold",
+        },
+        where: {
+          id: sell.productId,
+        },
+      });
+    }
+
     const response = await prisma.sell.updateMany({
       where: {
         status: "Pending",

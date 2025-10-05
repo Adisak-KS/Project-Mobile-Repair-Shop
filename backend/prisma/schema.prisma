@@ -73,3 +73,14 @@ model Sell {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Service {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  price     String
+  remark    String?
+  payDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
