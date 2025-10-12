@@ -22,9 +22,7 @@ export const createSell = async (req: Request, res: Response) => {
 
   try {
     const product = await prisma.product.findFirst({
-      where: { serial: serial,
-        status: 'instock'
-       },
+      where: { serial: serial, status: "instock" },
     });
 
     if (!product) {
@@ -210,6 +208,85 @@ export const confirmSell = async (req: Request, res: Response) => {
       success: true,
       message: "Confirm product successfully!",
       data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  }
+};
+
+export const dashboardSell = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
+
+  try {
+    // รวมยอดขายทั้งหมด
+    const totalIncomeAgg = await prisma.sell.aggregate({
+      _sum: { price: true },
+      where: { status: "Paid" },
+    });
+
+    // จำนวนงานซ่อมทั้งหมด
+    const totalRepair = await prisma.service.count();
+
+    // จำนวนรายการขายที่จ่ายแล้ว
+    const totalSale = await prisma.sell.count({
+      where: { status: "Paid" },
+    });
+
+    // ข้อมูลขายทั้งหมด (price + createdAt)
+    const sells = await prisma.sell.findMany({
+      where: { status: "Paid" },
+      select: { price: true, createdAt: true },
+    });
+
+    // ชื่อเดือนภาษาไทย
+    const monthsTH = [
+      "มกราคม",
+      "กุมภาพันธ์",
+      "มีนาคม",
+      "เมษายน",
+      "พฤษภาคม",
+      "มิถุนายน",
+      "กรกฎาคม",
+      "สิงหาคม",
+      "กันยายน",
+      "ตุลาคม",
+      "พฤศจิกายน",
+      "ธันวาคม",
+    ];
+
+    // สร้าง array 12 เดือน เริ่มต้น 0
+    const incomePerMonth = monthsTH.map((m) => ({ month: m, income: 0 }));
+
+    // รวมยอดขายต่อเดือน
+    sells.forEach((s) => {
+      const monthIndex = new Date(s.createdAt).getMonth(); // 0-11
+      incomePerMonth[monthIndex].income += Number(s.price);
+    });
+
+    return res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "Dashboard sell successfully!",
+      data: {
+        totalIncome: totalIncomeAgg._sum.price ?? 0,
+        totalRepair,
+        totalSale,
+        incomePerMonth,
+      },
       meta: {
         timestamp: new Date().toISOString(),
         endpoint: req.originalUrl,

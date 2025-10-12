@@ -25,3 +25,9 @@ export const confirmSell = async () => {
   const response = await axios.get(`${API_BASE_URL}/sell/confirm`);
   return response.data;
 };
+
+
+export const dashboardSell = async ()=>{
+  const response = await axios.get(`${API_BASE_URL}/sell/dashboard`);
+  return response.data;
+}

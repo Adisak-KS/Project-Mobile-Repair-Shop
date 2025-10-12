@@ -12,7 +12,6 @@ import {
 } from "@/app/services/buyService";
 import { validateCreateBuy } from "@/app/utils/validation";
 import { extractErrorMessage } from "@/app/utils/errorHandler";
-import { Numans } from "next/font/google";
 
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
@@ -291,7 +290,7 @@ export default function Page() {
             <th className="text-left">ลูกค้า</th>
             <th className="text-left">เบอร์โทรศัพท์</th>
             <th className="text-left">หมายเหตุ</th>
-            <th className="w-[110px]">Action</th>
+            <th className="w-[120px]">Action</th>
           </tr>
         </thead>
         <tbody>

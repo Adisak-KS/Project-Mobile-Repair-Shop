@@ -67,7 +67,7 @@ model Sell {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   productId String   @db.ObjectId
   product   Product  @relation(fields: [productId], references: [id])
-  price     Int
+  price     Float
   status    String   @default("Pending") // pending, paid, delete
   payDate   DateTime
   createdAt DateTime @default(now())
@@ -77,10 +77,9 @@ model Sell {
 model Service {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  price     String
+  price     Float
   remark    String?
   payDate   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }

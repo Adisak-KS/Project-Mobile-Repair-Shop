@@ -10,12 +10,9 @@ import { extractErrorMessage } from "@/app/utils/errorHandler";
 import {
   showAlertConfirmDelete,
   showAlertConfirmSell,
-  showAlertConfirmSellE,
 } from "@/app/utils/sweetAlert";
-import { error } from "console";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import Swal from "sweetalert2";
 
 export default function Page() {
   const [serial, setSerial] = useState("");

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Modal from "../components/ui/modal";
-import { updateUser, userInfo } from "../services/userService";
+import { updateUser, updateUserInfo, userInfo } from "../services/userService";
 import toast from "react-hot-toast";
 import { extractErrorMessage } from "../utils/errorHandler";
 
@@ -25,7 +25,16 @@ export default function Sidebar() {
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return; // กัน null
+    if (!token) {
+      localStorage.removeItem("token");
+      toast.error("กรุณาเข้าสู่ระบบ");
+      // ใช้ setTimeout เพื่อให้ toast แสดงก่อน redirect
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1500);
+      return; // สำคัญ! หยุดการทำงานต่อ
+    }
+
     const authHeader = {
       Authorization: `Bearer ${token}`,
     };
@@ -61,7 +70,7 @@ export default function Sidebar() {
 
       const token = localStorage.getItem("token");
       const authHeader = { Authorization: `Bearer ${token}` };
-      const response = await updateUser(
+      const response = await updateUserInfo(
         firstName,
         username,
         password,
