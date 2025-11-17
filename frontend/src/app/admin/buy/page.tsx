@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Modal from "@/app/components/ui/modal";
 import { showAlertConfirmDelete } from "@/app/utils/sweetAlert";
@@ -26,13 +26,29 @@ export default function Page() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [remark, setRemark] = useState("");
 
-  const [products, setProducts] = useState([]); // สินค้าที่ซื้อ
-  const [id, setId] = useState(null); // id เอาไว้ Update รายการ
+  const [products, setProducts] = useState<any[]>([]); // สินค้าที่ซื้อ
+  const [id, setId] = useState<string | null>(null); // id เอาไว้ Update รายการ
   const [qty, setQty] = useState(1);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(1);
+  const [totalRows, setTotalRows] = useState(0);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await listProduct(page);
+      setProducts(response.data);
+      setTotalRows(response.pagination.totalItems);
+      setTotalPage(response.pagination.totalPages);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
+    }
+  }, [page]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [page]);
 
   const handleOpenModal = () => {
     setIsOpen(true);
@@ -40,15 +56,6 @@ export default function Page() {
 
   const handleCloseModal = () => {
     setIsOpen(false);
-  };
-
-  const fetchData = async () => {
-    try {
-      const response = await listProduct();
-      setProducts(response.data);
-    } catch (error: unknown) {
-      toast.error(extractErrorMessage(error));
-    }
   };
 
   const handleSave = async () => {
@@ -322,6 +329,39 @@ export default function Page() {
           ))}
         </tbody>
       </table>
+
+      <div className="mt-5">
+        <div>รายการทั้งหมด {totalRows} รายการ</div>
+        <div>
+          หน้า {page} จาก {totalPage} รายการ
+        </div>
+        <div className="flex gap-1">
+          <button className="btn" onClick={() => setPage(1)}>
+            <i className="fa-solid fa-caret-left-mr-2"></i>
+            หน้าแรก
+          </button>
+          <button className="btn" onClick={() => setPage(page - 1)}>
+            <i className="fa-solid fa-caret-left"></i>
+          </button>
+          {Array.from({ length: totalPage }, (_, i) => (
+            <button
+              className={`btn ${i + 1 === page ? "btn-active" : ""}`}
+              onClick={() => setPage(i + 1)}
+              key={i}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button className="btn" onClick={() => setPage(page + 1)}>
+            <i className="fa-solid fa-caret-right"></i>
+          </button>
+          <button className="btn" onClick={() => setPage(totalPage)}>
+            หน้าสุดท้าย
+            <i className="fa-solid fa-caret-right ml-2"></i>
+          </button>
+        </div>
+      </div>
     </>
   );
 }

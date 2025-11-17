@@ -2,8 +2,8 @@ import axios from "axios";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-export const listProduct = async () => {
-  const response = await axios.get(`${API_BASE_URL}/buy/list`);
+export const listProduct = async (page: number = 1) => {
+  const response = await axios.get(`${API_BASE_URL}/buy/list?page=${page}`);
   return response.data;
 };
 

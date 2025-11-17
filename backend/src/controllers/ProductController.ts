@@ -6,6 +6,18 @@ const prisma = new PrismaClient();
 export const listProduct = async (req: Request, res: Response) => {
   const requestId = uuidv4();
   try {
+    const page = Number(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const totalRow = await prisma.product.count({
+      where: {
+        status: {
+          not: "delete",
+        },
+      },
+    });
+    const totalPages = Math.ceil(totalRow / limit);
+
     const response = await prisma.product.findMany({
       orderBy: {
         createdAt: "desc",
@@ -15,6 +27,8 @@ export const listProduct = async (req: Request, res: Response) => {
           not: "delete",
         },
       },
+      skip: skip,
+      take: limit,
     });
 
     return res.status(200).json({
@@ -22,6 +36,14 @@ export const listProduct = async (req: Request, res: Response) => {
       success: true,
       message: "แสดงข้อมูลรายการสินค้า สำเร็จ",
       data: response,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalRow,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
       meta: {
         timestamp: new Date().toISOString(),
         endpoint: req.originalUrl,

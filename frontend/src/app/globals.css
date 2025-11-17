@@ -78,3 +78,7 @@ body {
 .btn-delete {
   @apply bg-red-600 text-white px-3 py-2 rounded-md cursor-pointer hover:bg-red-700;
 }
+
+.btn-active{
+  @apply bg-white border-2 border-blue-600 text-blue-600;
+}
