@@ -30,7 +30,12 @@ export default function Page() {
         console.log(response.data.token);
 
         toast.success(`เข้าใช้งานด้วย ${username} สำเร็จ`);
-        router.push("/admin/dashboard");
+
+        if (response.data.level === "Admin") {
+          router.push("/admin/dashboard");
+        }else{
+          router.push('/admin/sell');
+        }
       } else {
         toast.error(response.message || "เข้าสู่ระบบไม่สำเร็จ");
       }

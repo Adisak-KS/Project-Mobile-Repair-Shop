@@ -118,43 +118,52 @@ export default function Sidebar() {
           </div>
         </div>
         <div className="p-5 text-white text-xl flex flex-col gap-2">
-          <div className="hover:bg-blue-700">
-            <Link href="/admin/dashboard">
-              <i className="fa-solid fa-gauge mr-2 w-5 text-center"></i>
-              Dashboard
-            </Link>
-          </div>
-          <div>
-            <Link href="/admin/buy">
-              <i className="fa-solid fa-basket-shopping mr-2 w-5 text-center"></i>
-              Buy
-            </Link>
-          </div>
+          {level === "Admin" && (
+            <>
+              <div className="hover:bg-blue-700">
+                <Link href="/admin/dashboard">
+                  <i className="fa-solid fa-gauge mr-2 w-5 text-center"></i>
+                  Dashboard
+                </Link>
+              </div>
+              <div>
+                <Link href="/admin/buy">
+                  <i className="fa-solid fa-basket-shopping mr-2 w-5 text-center"></i>
+                  ซื้อสินค้า
+                </Link>
+              </div>
+            </>
+          )}
+
           <div>
             <Link href="/admin/sell">
               <i className="fa-solid fa-dollar-sign mr-2 w-5 text-center"></i>
-              Sell
+              ขายสินค้า
             </Link>
           </div>
           <div>
             <Link href="/admin/repair">
               <i className="fa-solid fa-screwdriver-wrench mr-2 w-5 text-center"></i>
-              Repair
+              รายการซ่อม
             </Link>
           </div>
-          <div>
-            <Link href="/admin/company">
-              <i className="fa-solid fa-building mr-2 w-5 text-center"></i>
-              Company
-            </Link>
-          </div>
+          {level === "Admin" && (
+            <>
+              <div>
+                <Link href="/admin/company">
+                  <i className="fa-solid fa-building mr-2 w-5 text-center"></i>
+                  ข้อมูลร้าน
+                </Link>
+              </div>
 
-          <div>
-            <Link href="/admin/user">
-              <i className="fa-solid fa-user-group mr-2 w-5 text-center"></i>
-              User
-            </Link>
-          </div>
+              <div>
+                <Link href="/admin/user">
+                  <i className="fa-solid fa-user-group mr-2 w-5 text-center"></i>
+                  ผู้ใช้งาน
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
