@@ -232,10 +232,20 @@ export const dashboardSell = async (req: Request, res: Response) => {
   const requestId = uuidv4();
 
   try {
+    const year = req.params.year ? Number(req.params.year) : new Date().getFullYear();
+    const startDate = new Date(`${year}-01-01`);
+    const endDate = new Date(`${year + 1}-01-01`);
+
     // รวมยอดขายทั้งหมด
     const totalIncomeAgg = await prisma.sell.aggregate({
       _sum: { price: true },
-      where: { status: "Paid" },
+      where: {
+        status: "Paid",
+        payDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
     });
 
     // จำนวนงานซ่อมทั้งหมด
@@ -248,8 +258,14 @@ export const dashboardSell = async (req: Request, res: Response) => {
 
     // ข้อมูลขายทั้งหมด (price + createdAt)
     const sells = await prisma.sell.findMany({
-      where: { status: "Paid" },
-      select: { price: true, createdAt: true },
+      where: {
+        status: "Paid",
+        payDate: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+      select: { price: true, payDate: true },
     });
 
     // ชื่อเดือนภาษาไทย
@@ -273,8 +289,10 @@ export const dashboardSell = async (req: Request, res: Response) => {
 
     // รวมยอดขายต่อเดือน
     sells.forEach((s) => {
-      const monthIndex = new Date(s.createdAt).getMonth(); // 0-11
-      incomePerMonth[monthIndex].income += Number(s.price);
+      if (s.payDate) {
+        const monthIndex = new Date(s.payDate).getMonth(); // 0-11
+        incomePerMonth[monthIndex].income += Number(s.price);
+      }
     });
 
     return res.status(200).json({

@@ -26,8 +26,8 @@ export const confirmSell = async () => {
   return response.data;
 };
 
-export const dashboardSell = async () => {
-  const response = await axios.get(`${API_BASE_URL}/sell/dashboard`);
+export const dashboardSell = async (currentYear: number) => {
+  const response = await axios.get(`${API_BASE_URL}/sell/dashboard/${currentYear}`);
   return response.data;
 };
 

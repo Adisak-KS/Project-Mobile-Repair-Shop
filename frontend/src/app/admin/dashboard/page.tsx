@@ -21,29 +21,36 @@ export default function Page() {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalRepair, setTotalRepair] = useState(0);
   const [totalSale, setTotalSale] = useState(0);
+  const [listYear, setListYear] = useState<any[]>([]);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
-    fetchData();
+    const prevYear = new Date().getFullYear() - 5;
+    const years = Array.from({ length: 6 }, (_, index) => prevYear + index);
+    setListYear(years);
+
+    fetchData(currentYear);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (year?: number) => {
+    const selectedYear = year ?? currentYear;
     try {
-      const response = await dashboardSell();
+      const response = await dashboardSell(selectedYear);
 
       setTotalIncome(response.data.totalIncome);
       setTotalRepair(response.data.totalRepair);
       setTotalSale(response.data.totalSale);
+
       const chartData = response.data.incomePerMonth.map((item: any) => ({
         name: item.month,
         income: Number(item.income) || 0,
       }));
-      console.log(chartData); 
+      console.log(chartData);
       setData(chartData);
     } catch (error: unknown) {
       return toast.error(extractErrorMessage(error));
     }
   };
-
 
   const box = (color: string, title: string, value: string) => {
     return (
@@ -59,6 +66,27 @@ export default function Page() {
   return (
     <div>
       <h1 className="content-header">Dashboard</h1>
+      <div className="flex gap-4 me-3 items-center">
+        <div className="w-[50px] text-right">เลือกปี</div>
+        <select
+          value={currentYear}
+          onChange={(e) => setCurrentYear(parseInt(e.target.value))}
+          className="form-control"
+          style={{ width: "200px" }}
+        >
+          {listYear.map((year, index) => (
+            <option key={index} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+        <button className="btn flex items-center w-[161px]" onClick={()=>{
+          fetchData(currentYear)
+        }}>
+          <i className="fa-solid fa-magnifying-glass mr-3"></i>
+          แสดงรายการ
+        </button>
+      </div>
       <div className="flex gap-4">
         {box(
           "bg-purple-600",
@@ -92,7 +120,7 @@ export default function Page() {
               }
             />
             <Legend />
-            <Bar dataKey="income"  name="รายได้"  fill="teal" opacity={0.5} />
+            <Bar dataKey="income" name="รายได้" fill="teal" opacity={0.5} />
           </BarChart>
         </ResponsiveContainer>
       </div>
