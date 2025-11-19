@@ -3,6 +3,8 @@ import {
   confirmSell,
   createSell,
   dashboardSell,
+  historySell,
+  infoSell,
   listSell,
   removeSell,
 } from "../controllers/SellController";
@@ -14,6 +16,8 @@ router.delete("/sell/remove/:id", removeSell);
 router.get("/sell/confirm", confirmSell);
 
 router.get("/sell/dashboard", dashboardSell);
+router.get("/sell/history", historySell);
+router.get("/sell/info/:id", infoSell);
 
 
 export default router;

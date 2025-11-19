@@ -306,3 +306,88 @@ export const dashboardSell = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const historySell = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
+  try {
+    const response = await prisma.sell.findMany({
+      where: {
+        status: "Paid",
+      },
+      orderBy: {
+        id: "desc",
+      },
+      include: {
+        product: {
+          select: {
+            serial: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "History sell successfully!",
+      data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  }
+};
+
+export const infoSell = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
+  try {
+    const { id } = req.params;
+
+    const response = await prisma.sell.findUnique({
+      where: {
+        id: id,
+        status: "Paid",
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    return res.status(200).json({
+      statusCode: 200,
+      success: true,
+      message: "Info Sell Successfully!",
+      data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  }
+};

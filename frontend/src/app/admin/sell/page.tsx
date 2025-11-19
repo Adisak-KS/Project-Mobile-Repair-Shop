@@ -13,6 +13,7 @@ import {
 } from "@/app/utils/sweetAlert";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
   const [serial, setSerial] = useState("");
@@ -21,6 +22,7 @@ export default function Page() {
   const [id, setId] = useState(0); // ข้อมูล id สำหรับแก้ไข ลบ
   const [totalAmount, setTotalAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchData();
@@ -105,7 +107,18 @@ export default function Page() {
 
   return (
     <div>
-      <div className="content-header">ขายสินค้า</div>
+      <div className="content-header flex justify-between">
+        ขายสินค้า
+        <div>
+          <button
+            className="btn text-lg"
+            onClick={() => router.push("/admin/sell/history")}
+          >
+            <i className="fa-solid fa-file-alt mr-3"></i>
+              ประวัติการขาย
+          </button>
+        </div>
+      </div>
       <div className="flex gap-2 items-end">
         <div className="w-full">
           <label htmlFor="Serial">Serial</label>

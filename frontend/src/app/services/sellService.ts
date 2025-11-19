@@ -26,8 +26,17 @@ export const confirmSell = async () => {
   return response.data;
 };
 
-
-export const dashboardSell = async ()=>{
+export const dashboardSell = async () => {
   const response = await axios.get(`${API_BASE_URL}/sell/dashboard`);
   return response.data;
-}
+};
+
+export const historySell = async () => {
+  const response = await axios.get(`${API_BASE_URL}/sell/history`);
+  return response.data;
+};
+
+export const infoSell = async (id: string) => {
+  const response = await axios.get(`${API_BASE_URL}/sell/info/${id}`);
+  return response.data;
+};
