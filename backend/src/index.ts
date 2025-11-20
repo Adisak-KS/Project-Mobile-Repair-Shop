@@ -16,6 +16,7 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
+
 const PORT = process.env.PORT || 3001;
 
 // ใช้ router ที่ imPORT มา
@@ -25,6 +26,7 @@ app.use("/api/v1", productRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", sellRoutes);
 app.use("/api/v1", serviceRoutes);
+app.use('/api/v1/uploads', express.static('uploads'));
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT ${PORT} : http://localhost:${PORT}`);

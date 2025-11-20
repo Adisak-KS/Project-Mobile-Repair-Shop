@@ -2,12 +2,13 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 const prisma = new PrismaClient();
+import ExcelJS from "exceljs";
 
 export const listProduct = async (req: Request, res: Response) => {
   const requestId = uuidv4();
   try {
     const page = Number(req.query.page) || 1;
-    const limit = 10;
+    const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const totalRow = await prisma.product.count({
       where: {
@@ -262,6 +263,85 @@ export const removeProduct = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Remove Product Error :", error);
+    return res.status(500).json({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        endpoint: req.originalUrl,
+        requestId,
+      },
+    });
+  }
+};
+
+export const exportToExcel = async (req: Request, res: Response) => {
+  const requestId = uuidv4();
+  try {
+    const page = Number(req.query.page) || 0;
+    const limit = 10;
+    const skip = page > 0 ? (page - 1) * limit : 0;
+
+    const response = await prisma.product.findMany({
+      where: {
+        status: {
+          not: "delete",
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip: page > 0 ? skip : undefined,
+      take: page > 0 ? limit : undefined,
+    });
+    const fileName = `Products_${page > 0 ? `Page${page}_` : "All_"}${new Date().getTime()}.xlsx`;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Products");
+
+    // Create Header Table
+    worksheet.columns = [
+      { header: "Serial", key: "serial", width: 15 },
+      { header: "ชื่อสินค้า", key: "name", width: 30 },
+      { header: "รุ่น", key: "release", width: 20 },
+      { header: "สี", key: "color", width: 15 },
+      { header: "ราคา", key: "price", width: 15 },
+      { header: "ชื่อลูกค้า", key: "customerName", width: 25 },
+      { header: "เบอร์โทรศัพท์", key: "customerPhone", width: 15 },
+      { header: "ที่อยู่", key: "customerAddress", width: 40 },
+      { header: "หมายเหตุ", key: "remark", width: 30 },
+      { header: "วันที่สร้าง", key: "createdAt", width: 20 },
+    ];
+
+    //  Added Data to Excel
+    response.forEach((item) => {
+      worksheet.addRow({
+        serial: item.serial || "-",
+        name: item.name,
+        release: item.release,
+        color: item.color,
+        price: item.price,
+        customerName: item.customerName,
+        customerPhone: item.customerPhone,
+        customerAddress: item.customerAddress,
+        remark: item.remark || "-",
+        createdAt: new Date(item.createdAt).toLocaleString("th-TH"),
+      });
+    });
+
+    // Set response headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error: any) {
+    console.error("Export Excel Error:", error);
     return res.status(500).json({
       statusCode: 500,
       success: false,

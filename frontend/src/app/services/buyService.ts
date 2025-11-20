@@ -2,8 +2,8 @@ import axios from "axios";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-export const listProduct = async (page: number = 1) => {
-  const response = await axios.get(`${API_BASE_URL}/buy/list?page=${page}`);
+export const listProduct = async (page: number = 1, limit: number = 10) => {
+  const response = await axios.get(`${API_BASE_URL}/buy/list?page=${page}&limit=${limit}`);
   return response.data;
 };
 
@@ -65,3 +65,11 @@ export const DeleteBuy = async (id: string) => {
   const response = await axios.delete(`${API_BASE_URL}/buy/remove/${id}`);
   return response.data;
 };
+
+export const exportToExcelSell = async (page?: number)=>{
+  const url = page ? `${API_BASE_URL}/buy/export?page=${page}` : `${API_BASE_URL}/buy/export`;
+  const response = await axios.get(url, {
+    responseType: 'blob',
+  });
+  return response;
+}

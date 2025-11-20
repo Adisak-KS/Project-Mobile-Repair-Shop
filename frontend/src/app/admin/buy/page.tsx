@@ -7,6 +7,7 @@ import { showAlertConfirmDelete } from "@/app/utils/sweetAlert";
 import {
   createBuy,
   DeleteBuy,
+  exportToExcelSell,
   listProduct,
   updateBuy,
 } from "@/app/services/buyService";
@@ -16,11 +17,12 @@ import { extractErrorMessage } from "@/app/utils/errorHandler";
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [serial, setSerial] = useState("");
   const [name, setName] = useState("");
   const [release, setRelease] = useState("");
   const [color, setColor] = useState("");
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState<number | "">(0);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
@@ -28,27 +30,33 @@ export default function Page() {
 
   const [products, setProducts] = useState<any[]>([]); // สินค้าที่ซื้อ
   const [id, setId] = useState<string | null>(null); // id เอาไว้ Update รายการ
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState<number | "">(1);
 
   // Pagination
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPage, setTotalPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await listProduct(page);
+      const response = await listProduct(page, limit);
       setProducts(response.data);
       setTotalRows(response.pagination.totalItems);
       setTotalPage(response.pagination.totalPages);
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
     }
-  }, [page]);
+  }, [page, limit]);
 
   useEffect(() => {
     fetchData();
-  }, [page]);
+  }, [page, limit, fetchData]);
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
 
   const handleOpenModal = () => {
     setIsOpen(true);
@@ -59,12 +67,15 @@ export default function Page() {
   };
 
   const handleSave = async () => {
+    const priceValue = price === "" ? 0 : Number(price);
+    const qtyValue = qty === "" ? 1 : Number(qty);
+
     const errorValidate = validateCreateBuy(
       serial,
       name,
       release,
       color,
-      price,
+      priceValue,
       customerName,
       customerPhone,
       customerAddress
@@ -83,12 +94,12 @@ export default function Page() {
           name,
           release,
           color,
-          price,
+          priceValue,
           customerName,
           customerPhone,
           customerAddress,
           remark,
-          qty
+          qtyValue
         );
       } else {
         response = await updateBuy(
@@ -97,7 +108,7 @@ export default function Page() {
           name,
           release,
           color,
-          price,
+          priceValue,
           customerName,
           customerPhone,
           customerAddress,
@@ -171,6 +182,61 @@ export default function Page() {
     setQty(1);
   };
 
+  const exportToExcel = async (currentPageOnly: boolean) => {
+    if (isExporting) return; // Prevent double click
+
+    try {
+      setIsExporting(true);
+      const result = await exportToExcelSell(currentPageOnly ? page : undefined);
+      const blob = result.data;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Products_${currentPageOnly ? `Page${page}_` : "All_"}${new Date().getTime()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Export Excel ${currentPageOnly ? 'หน้านี้' : 'ทั้งหมด'} สำเร็จ`);
+    } catch (error: any) {
+      toast.error(extractErrorMessage(error));
+      console.log("Error Export Excel:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPage) return;
+    setPage(newPage);
+  };
+
+  const getPageNumbers = () => {
+    if (totalPage <= 7) {
+      return Array.from({ length: totalPage }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [1];
+
+    if (page > 3) {
+      pages.push('...');
+    }
+
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPage - 1, page + 1); i++) {
+      pages.push(i);
+    }
+
+    if (page < totalPage - 2) {
+      pages.push('...');
+    }
+
+    if (totalPage > 1) {
+      pages.push(totalPage);
+    }
+
+    return pages;
+  };
+
   return (
     <>
       <h1 className="content-header">รายการซื้อ</h1>
@@ -184,6 +250,22 @@ export default function Page() {
         >
           <i className="fa-solid fa-plus mr-2"></i>
           เพิ่มรายการ
+        </button>
+        <button
+          className="btn ms-1"
+          onClick={() => exportToExcel(true)}
+          disabled={isExporting}
+        >
+          <i className={`fa-solid ${isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'} mr-2`}></i>
+          {isExporting ? 'กำลัง Export...' : 'Export หน้านี้'}
+        </button>
+        <button
+          className="btn ms-1 bg-green-600 hover:bg-green-700"
+          onClick={() => exportToExcel(false)}
+          disabled={isExporting}
+        >
+          <i className={`fa-solid ${isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'} mr-2`}></i>
+          {isExporting ? 'กำลัง Export...' : 'Export ทั้งหมด'}
         </button>
       </div>
 
@@ -226,11 +308,11 @@ export default function Page() {
 
         <label htmlFor="price">ราคา</label>
         <input
-          type="text"
+          type="number"
           placeholder="ระบุราคา"
-          maxLength={50}
+          min={0}
           value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
+          onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
         />
 
         <label htmlFor="customerName">ชื่อลูกค้า</label>
@@ -272,10 +354,10 @@ export default function Page() {
         <label htmlFor="qty">จำนวนสินค้า</label>
         <input
           type="number"
-          placeholder="ระบบจำนวน"
+          placeholder="ระบุจำนวน"
           min={1}
           value={qty}
-          onChange={(e) => setQty(Number(e.target.value))}
+          onChange={(e) => setQty(e.target.value === "" ? "" : Number(e.target.value))}
         />
 
         <div className="mt-2 block">
@@ -286,79 +368,185 @@ export default function Page() {
         </div>
       </Modal>
 
-      <table className="table mt-3">
-        <thead>
-          <tr>
-            <th className="text-left">serial</th>
-            <th className="text-left">ชื่อสินค้า</th>
-            <th className="text-left">รุ่น</th>
-            <th className="text-left">สี</th>
-            <th className="text-right pr-0">ราคา</th>
-            <th className="text-left">ลูกค้า</th>
-            <th className="text-left">เบอร์โทรศัพท์</th>
-            <th className="text-left">หมายเหตุ</th>
-            <th className="w-[120px]">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((item: any) => (
-            <tr key={item.id}>
-              <td>{item.serial}</td>
-              <td>{item.name}</td>
-              <td>{item.release}</td>
-              <td>{item.color}</td>
-              <td className="text-right">{item.price.toLocaleString()}</td>
-              <td>{item.customerName}</td>
-              <td>{item.customerPhone}</td>
-              <td>{item.remark || "-"}</td>
-              <td>
-                <button
-                  onClick={() => handleUpdate(item.id)}
-                  className="btn-edit mr-2"
-                >
-                  <i className="fa-solid fa-edit"></i>
-                </button>
-                <button
-                  onClick={() => handleRemove(item.id)}
-                  className="btn-delete"
-                >
-                  <i className="fa-solid fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="mt-5">
-        <div>รายการทั้งหมด {totalRows} รายการ</div>
-        <div>
-          หน้า {page} จาก {totalPage} รายการ
+      <div className="mt-4 bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Serial
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ชื่อสินค้า
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  รุ่น
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                  สี
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ราคา
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                  ลูกค้า
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                  เบอร์โทรศัพท์
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden 2xl:table-cell">
+                  หมายเหตุ
+                </th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  จัดการ
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                    <i className="fa-solid fa-inbox text-4xl mb-2 text-gray-300"></i>
+                    <p>ไม่พบข้อมูล</p>
+                  </td>
+                </tr>
+              ) : (
+                products.map((item: any) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {item.serial || <span className="text-gray-400">-</span>}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {item.name}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
+                      {item.release}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden lg:table-cell">
+                      {item.color}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-green-600">
+                      ฿{item.price.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell">
+                      {item.customerName}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden xl:table-cell">
+                      {item.customerPhone}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 hidden 2xl:table-cell max-w-xs truncate">
+                      {item.remark || <span className="text-gray-400">-</span>}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleUpdate(item.id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                          title="แก้ไข"
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button
+                          onClick={() => handleRemove(item.id)}
+                          className="inline-flex items-center px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                          title="ลบ"
+                        >
+                          <i className="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        <div className="flex gap-1">
-          <button className="btn" onClick={() => setPage(1)}>
-            <i className="fa-solid fa-caret-left-mr-2"></i>
-            หน้าแรก
-          </button>
-          <button className="btn" onClick={() => setPage(page - 1)}>
-            <i className="fa-solid fa-caret-left"></i>
-          </button>
-          {Array.from({ length: totalPage }, (_, i) => (
-            <button
-              className={`btn ${i + 1 === page ? "btn-active" : ""}`}
-              onClick={() => setPage(i + 1)}
-              key={i}
-            >
-              {i + 1}
-            </button>
-          ))}
+      </div>
 
-          <button className="btn" onClick={() => setPage(page + 1)}>
-            <i className="fa-solid fa-caret-right"></i>
+      <div className="mt-5 bg-white p-4 rounded-lg shadow">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <div className="text-sm">
+              <span className="font-semibold text-gray-700">รายการทั้งหมด:</span>
+              <span className="ml-2 text-blue-600 font-bold">{totalRows}</span>
+              <span className="ml-1 text-gray-500">รายการ</span>
+            </div>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <div className="text-sm text-gray-600">
+              หน้า <span className="font-semibold text-gray-900">{page}</span> / <span className="font-semibold text-gray-900">{totalPage}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="limit" className="text-sm text-gray-600 whitespace-nowrap">
+              แสดงผล:
+            </label>
+            <select
+              id="limit"
+              className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              value={limit}
+              onChange={(e) => handleLimitChange(Number(e.target.value))}
+            >
+              <option value={5}>5 รายการ</option>
+              <option value={10}>10 รายการ</option>
+              <option value={20}>20 รายการ</option>
+              <option value={50}>50 รายการ</option>
+              <option value={100}>100 รายการ</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          <button
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            onClick={() => handlePageChange(1)}
+            disabled={page === 1}
+          >
+            <i className="fa-solid fa-angles-left mr-1"></i>
+            <span className="hidden sm:inline">หน้าแรก</span>
           </button>
-          <button className="btn" onClick={() => setPage(totalPage)}>
-            หน้าสุดท้าย
-            <i className="fa-solid fa-caret-right ml-2"></i>
+          <button
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
+
+          <div className="flex gap-1">
+            {getPageNumbers().map((pageNum, idx) => (
+              pageNum === '...' ? (
+                <span className="px-3 py-2 text-gray-500" key={`dots-${idx}`}>
+                  ...
+                </span>
+              ) : (
+                <button
+                  className={`min-w-10 px-3 py-2 text-sm font-medium rounded-md border transition-colors ${
+                    pageNum === page
+                      ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                  onClick={() => handlePageChange(pageNum as number)}
+                  key={pageNum}
+                >
+                  {pageNum}
+                </button>
+              )
+            ))}
+          </div>
+
+          <button
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPage}
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+          </button>
+          <button
+            className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            onClick={() => handlePageChange(totalPage)}
+            disabled={page === totalPage}
+          >
+            <span className="hidden sm:inline">หน้าสุดท้าย</span>
+            <i className="fa-solid fa-angles-right ml-1"></i>
           </button>
         </div>
       </div>
