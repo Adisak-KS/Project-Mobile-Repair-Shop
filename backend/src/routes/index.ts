@@ -1,6 +1,7 @@
 import { Router } from "express";
 import fg from "fast-glob";
 
+
 async function loadAllRoutes() {
   const router = Router();
   const files = await fg(["**/*.route.{ts,js}"], {
