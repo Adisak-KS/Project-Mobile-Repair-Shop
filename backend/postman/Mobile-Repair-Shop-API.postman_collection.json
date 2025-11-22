@@ -1,0 +1,628 @@
+{
+  "info": {
+    "name": "Mobile Repair Shop API",
+    "description": "API Documentation for Mobile Repair Shop Management System\n\n## Features\n- Authentication & Authorization with JWT\n- User Management\n- Company Management\n- Product/Inventory Management\n- Sales Management\n- Service/Repair Management\n\n## Getting Started\n1. Use the environment file for this collection\n2. Call POST /auth/signin to login\n3. Token will be saved automatically\n4. Use other endpoints with auto-authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if API server is running"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.environment.set('token', response.data.token);",
+                  "        console.log('Token saved to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/auth/signin",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["auth", "signin"]
+            },
+            "description": "Login with username and password"
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.environment.set('token', response.data.token);",
+                  "        console.log('Token saved to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"firstName\": \"สมชาย\",\n  \"lastName\": \"ใจดี\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/auth/signup",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["auth", "signup"]
+            },
+            "description": "Register new user account"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/user/list",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "list"]
+            },
+            "description": "Get all users (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user001\",\n  \"password\": \"password123\",\n  \"firstName\": \"สมชาย\",\n  \"lastName\": \"ใจดี\",\n  \"level\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/user/create",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "create"]
+            },
+            "description": "Create new user (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user001\",\n  \"firstName\": \"สมชาย\",\n  \"lastName\": \"ใจดี\",\n  \"level\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/user/update/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "update", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update user by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/user/remove/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "remove", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete user by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/user/info",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "info"]
+            },
+            "description": "Get current user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Update My Info",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"สมชาย\",\n  \"lastName\": \"ใจดี\",\n  \"password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/user/update",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["user", "update"]
+            },
+            "description": "Update current user information"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "item": [
+        {
+          "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"บริษัท ซ่อมมือถือ จำกัด\",\n  \"address\": \"123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110\",\n  \"phone\": \"02-123-4567\",\n  \"taxId\": \"0105558888888\",\n  \"email\": \"info@mobilerepair.com\",\n  \"website\": \"https://www.mobilerepair.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/company/create",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["company", "create"]
+            },
+            "description": "Create or update company information (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Company",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/company/list",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["company", "list"]
+            },
+            "description": "Get company information"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/buy/list",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["buy", "list"]
+            },
+            "description": "Get all products in stock"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15 Pro Max 256GB\",\n  \"barcode\": \"8850999320102\",\n  \"qty\": 5,\n  \"cost\": 35000,\n  \"price\": 42000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/buy/create",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["buy", "create"]
+            },
+            "description": "Add product to stock (Admin & User)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15 Pro Max 512GB\",\n  \"barcode\": \"8850999320103\",\n  \"cost\": 38000,\n  \"price\": 45000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/buy/update/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["buy", "update", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update product by ID (Admin & User)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/buy/remove/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["buy", "remove", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete product by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Export to Excel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/buy/export",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["buy", "export"]
+            },
+            "description": "Export products to Excel file (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "item": [
+        {
+          "name": "List Sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/list",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "list"]
+            },
+            "description": "Get all sales records"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Sale",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serial\": \"SN123456789\",\n  \"price\": 42000,\n  \"customerName\": \"สมชาย ใจดี\",\n  \"customerPhone\": \"081-234-5678\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/create",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "create"]
+            },
+            "description": "Create new sale (Admin & User)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Sale",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/remove/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "remove", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete sale by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Sales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/confirm",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "confirm"]
+            },
+            "description": "Confirm all pending sales (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/dashboard/:year",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "dashboard", ":year"],
+              "variable": [
+                {
+                  "key": "year",
+                  "value": "2568"
+                }
+              ]
+            },
+            "description": "Get sales dashboard by year (Buddhist Era)"
+          },
+          "response": []
+        },
+        {
+          "name": "Sales History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/history",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "history"]
+            },
+            "description": "Get all sales history"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sale Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/sell/info/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["sell", "info", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Get sale details by ID"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/service/list",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["service", "list"]
+            },
+            "description": "Get all service/repair records"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"สมชาย ใจดี\",\n  \"customerPhone\": \"081-234-5678\",\n  \"deviceType\": \"iPhone 15 Pro Max\",\n  \"problem\": \"หน้าจอแตก\",\n  \"status\": \"รอดำเนินการ\",\n  \"estimatedCost\": 3500,\n  \"note\": \"รอคอนเฟิร์มกับลูกค้า\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/service/create",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["service", "create"]
+            },
+            "description": "Create new service record (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"สมชาย ใจดี\",\n  \"customerPhone\": \"081-234-5678\",\n  \"deviceType\": \"iPhone 15 Pro Max\",\n  \"problem\": \"หน้าจอแตก และ แบตเสื่อม\",\n  \"status\": \"กำลังซ่อม\",\n  \"estimatedCost\": 4500,\n  \"note\": \"เปลี่ยนหน้าจอและแบตเตอรี่แล้ว\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlV1}}/service/update/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["service", "update", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Update service by ID (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlV1}}/service/remove/:id",
+              "host": ["{{baseUrlV1}}"],
+              "path": ["service", "remove", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Delete service by ID (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
