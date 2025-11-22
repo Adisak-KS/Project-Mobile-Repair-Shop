@@ -93,3 +93,8 @@ body {
 .btn-active{
   @apply bg-white border-2 border-blue-600 text-blue-600;
 }
+
+/* Toast notifications - จำกัดให้แสดงมากสุด 3 รายการล่าสุด */
+.toast-container-limit > div:nth-child(n+4) {
+  display: none !important;
+}

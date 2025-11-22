@@ -3,7 +3,7 @@ export function validateSignIn(
   password: string
 ): string | null {
   if (!username.trim() || !password.trim()) {
-    return "Please enter your username and password.";
+    return "กรุณาระบุ ชื่อผู้ใช้ และรหัสผ่าน";
   }
 
   if (username.trim().length < 8 || username.trim().length > 50) {

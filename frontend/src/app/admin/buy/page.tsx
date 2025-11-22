@@ -11,7 +11,7 @@ import {
   updateBuy,
 } from "@/app/services/buyService";
 import { validateCreateBuy } from "@/app/utils/validation";
-import { extractErrorMessage } from "@/app/utils/errorHandler";
+import { extractErrorMessage, translateMessage } from "@/app/utils/errorHandler";
 
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
@@ -120,9 +120,9 @@ export default function Page() {
       if (response.success) {
         fetchData();
         handleCloseModal();
-        toast.success(response.message);
+        toast.success(translateMessage(response.message));
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));

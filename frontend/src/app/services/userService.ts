@@ -1,15 +1,12 @@
-import axios from "axios";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+import api from "../configs/axios";
 
 export const listUser = async () => {
-  const response = await axios.get(`${API_BASE_URL}/user/list`);
+  const response = await api.get("/user/list");
   return response.data;
 };
 
-export const userInfo = async (headers: Record<string, string>) => {
-  const response = await axios.get(`${API_BASE_URL}/user/info`, { headers });
+export const userInfo = async () => {
+  const response = await api.get("/user/info");
   return response.data;
 };
 
@@ -21,13 +18,13 @@ export const createUser = async (
   confirmPassword: string,
   level: string
 ) => {
-  const response = await axios.post(`${API_BASE_URL}/user/create`, {
-    firstName: firstName,
-    lastName: lastName,
-    username: username,
-    password: password,
-    confirmPassword: confirmPassword,
-    level: level,
+  const response = await api.post("/user/create", {
+    firstName,
+    lastName,
+    username,
+    password,
+    confirmPassword,
+    level,
   });
 
   return response.data;
@@ -40,18 +37,18 @@ export const updateUser = async (
   username: string,
   level: string
 ) => {
-  const response = await axios.put(`${API_BASE_URL}/user/update/${id}`, {
-    firstName: firstName,
-    lastName: lastName,
-    username: username,
-    level: level,
+  const response = await api.put(`/user/update/${id}`, {
+    firstName,
+    lastName,
+    username,
+    level,
   });
 
   return response.data;
 };
 
 export const removeUser = async (id: string) => {
-  const response = await axios.delete(`${API_BASE_URL}/user/remove/${id}`);
+  const response = await api.delete(`/user/remove/${id}`);
   return response.data;
 };
 
@@ -59,20 +56,13 @@ export const updateUserInfo = async (
   firstName: string,
   lastName: string,
   password: string,
-  level: string,
-  authHeader: Record<string, string>
+  level: string
 ) => {
-  const response = await axios.put(
-    `${API_BASE_URL}/user/update`,
-    {
-      firstName: firstName,
-      lastName: lastName,
-      password: password,
-      level: level,
-    },
-    {
-      headers: authHeader,
-    }
-  );
+  const response = await api.put("/user/update", {
+    firstName,
+    lastName,
+    password,
+    level,
+  });
   return response.data;
 };

@@ -65,9 +65,11 @@ export const signIn = async (req: Request, res: Response) => {
     if (!process.env.SECRET_KEY) {
       throw new Error("SECRET_KEY is not defined in environment variables");
     }
-    const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: user.id, level: user.level },
+      process.env.SECRET_KEY,
+      { expiresIn: "3d" } // หมดอายุใน 3 วัน (72 ชั่วโมง)
+    );
     return res.json({
       statusCode: 200,
       success: true,

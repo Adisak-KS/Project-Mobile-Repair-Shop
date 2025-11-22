@@ -22,7 +22,7 @@ export const createSell = async (req: Request, res: Response) => {
 
   try {
     const product = await prisma.product.findFirst({
-      where: { serial: serial, status: "instock" },
+      where: { serial: serial, status: "inStock" },
     });
 
     if (!product) {

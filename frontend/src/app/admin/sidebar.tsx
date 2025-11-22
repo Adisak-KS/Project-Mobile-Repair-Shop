@@ -5,8 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Modal from "../components/ui/modal";
 import { updateUser, updateUserInfo, userInfo } from "../services/userService";
+import { removeAccessToken } from "../services/tokenService";
 import toast from "react-hot-toast";
-import { extractErrorMessage } from "../utils/errorHandler";
+import { extractErrorMessage, translateMessage } from "../utils/errorHandler";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -30,27 +31,17 @@ export default function Sidebar() {
   }, []);
 
   const fetchData = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      localStorage.removeItem("token");
-      toast.error("กรุณาเข้าสู่ระบบ");
-      // ใช้ setTimeout เพื่อให้ toast แสดงก่อน redirect
-      setTimeout(() => {
-        router.push("/signin");
-      }, 1500);
-      return; // สำคัญ! หยุดการทำงานต่อ
+    try {
+      const response = await userInfo();
+      setFirstName(response.data.firstName);
+      setLastName(response.data.lastName);
+      setUsername(response.data.username);
+      setLevel(response.data.level);
+    } catch (error) {
+      // Token invalid หรือ missing จะถูกจัดการโดย axios interceptor
+      // interceptor จะ redirect ไป /signin อัตโนมัติ
+      console.error("Failed to fetch user info:", error);
     }
-
-    const authHeader = {
-      Authorization: `Bearer ${token}`,
-    };
-
-    const response = await userInfo(authHeader);
-
-    setFirstName(response.data.firstName);
-    setLastName(response.data.lastName);
-    setUsername(response.data.username);
-    setLevel(response.data.level);
   };
 
   const handleSignOut = () => {
@@ -58,10 +49,12 @@ export default function Sidebar() {
   };
 
   const confirmSignOut = () => {
-    localStorage.removeItem("token");
+    // ลบ token ออกจาก localStorage
+    removeAccessToken();
     setShowSignOutConfirm(false);
-    toast.success("ออกจากระบบสำเร็จ");
-    router.push("/");
+
+    // Redirect ไปหน้า signin
+    router.replace("/signin");
   };
 
   const cancelSignOut = () => {
@@ -84,21 +77,18 @@ export default function Sidebar() {
         return;
       }
 
-      const token = localStorage.getItem("token");
-      const authHeader = { Authorization: `Bearer ${token}` };
       const response = await updateUserInfo(
         firstName,
-        username,
+        lastName,
         password,
-        level,
-        authHeader
+        level
       );
       if (response.success) {
         fetchData();
-        toast.success(response.message);
+        toast.success(translateMessage(response.message));
         handleCloseModal();
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
@@ -183,7 +173,11 @@ export default function Sidebar() {
           fixed lg:static top-0 left-0 z-40
           w-64 lg:w-64
           transform transition-transform duration-300 ease-in-out
-          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          ${
+            isMobileMenuOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         {/* Header Section */}
@@ -209,7 +203,11 @@ export default function Sidebar() {
                 </p>
                 <p className="text-xs text-blue-200">{level}</p>
               </div>
-              <i className={`fa fa-chevron-down transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`}></i>
+              <i
+                className={`fa fa-chevron-down transition-transform duration-200 ${
+                  isProfileDropdownOpen ? "rotate-180" : ""
+                }`}
+              ></i>
             </button>
 
             {isProfileDropdownOpen && (
@@ -245,7 +243,8 @@ export default function Sidebar() {
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
             {menuItems.map((item, index) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <li key={index}>
                   <Link
@@ -391,7 +390,9 @@ export default function Sidebar() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <i className={`fa ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  <i
+                    className={`fa ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
+                  ></i>
                 </button>
               </div>
             </div>
@@ -414,7 +415,11 @@ export default function Sidebar() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  <i className={`fa ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  <i
+                    className={`fa ${
+                      showConfirmPassword ? "fa-eye-slash" : "fa-eye"
+                    }`}
+                  ></i>
                 </button>
               </div>
             </div>

@@ -1,9 +1,7 @@
-import axios from "axios";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+import api from "../configs/axios";
 
 export const listProduct = async (page: number = 1, limit: number = 10) => {
-  const response = await axios.get(`${API_BASE_URL}/buy/list?page=${page}&limit=${limit}`);
+  const response = await api.get(`/buy/list?page=${page}&limit=${limit}`);
   return response.data;
 };
 
@@ -19,7 +17,7 @@ export const createBuy = async (
   remark: string,
   qty: number,
 ) => {
-  const response = await axios.post(`${API_BASE_URL}/buy/create`, {
+  const response = await api.post("/buy/create", {
     serial,
     name,
     release,
@@ -47,7 +45,7 @@ export const updateBuy = async (
   customerAddress: string,
   remark: string
 ) => {
-  const response = await axios.put(`${API_BASE_URL}/buy/update/${id}`, {
+  const response = await api.put(`/buy/update/${id}`, {
     serial,
     name,
     release,
@@ -62,13 +60,13 @@ export const updateBuy = async (
 };
 
 export const DeleteBuy = async (id: string) => {
-  const response = await axios.delete(`${API_BASE_URL}/buy/remove/${id}`);
+  const response = await api.delete(`/buy/remove/${id}`);
   return response.data;
 };
 
 export const exportToExcelSell = async (page?: number)=>{
-  const url = page ? `${API_BASE_URL}/buy/export?page=${page}` : `${API_BASE_URL}/buy/export`;
-  const response = await axios.get(url, {
+  const url = page ? `/buy/export?page=${page}` : `/buy/export`;
+  const response = await api.get(url, {
     responseType: 'blob',
   });
   return response;

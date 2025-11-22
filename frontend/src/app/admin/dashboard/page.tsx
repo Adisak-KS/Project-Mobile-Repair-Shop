@@ -28,9 +28,11 @@ export default function Page() {
     const prevYear = new Date().getFullYear() - 5;
     const years = Array.from({ length: 6 }, (_, index) => prevYear + index);
     setListYear(years);
-
-    fetchData(currentYear);
   }, []);
+
+  useEffect(() => {
+    fetchData(currentYear);
+  }, [currentYear]);
 
   const fetchData = async (year?: number) => {
     const selectedYear = year ?? currentYear;
@@ -108,13 +110,6 @@ export default function Page() {
                 </option>
               ))}
             </select>
-            <button
-              className="flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg text-sm"
-              onClick={() => fetchData(currentYear)}
-            >
-              <i className="fa-solid fa-magnifying-glass"></i>
-              <span>แสดงรายการ</span>
-            </button>
           </div>
         </div>
       </div>

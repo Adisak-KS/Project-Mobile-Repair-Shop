@@ -1,9 +1,7 @@
-import axios from "axios";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+import api from "../configs/axios";
 
 export const listCompany = async () => {
-  const response = await axios.get(`${API_BASE_URL}/company/list`);
+  const response = await api.get("/company/list");
   return response.data;
 };
 
@@ -14,7 +12,7 @@ export const createCompany = async (
   email: string,
   taxCode: string
 ) => {
-  const response = await axios.post(`${API_BASE_URL}/company/create`, {
+  const response = await api.post("/company/create", {
     name,
     address,
     phone,

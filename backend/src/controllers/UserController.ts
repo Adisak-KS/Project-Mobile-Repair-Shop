@@ -1,15 +1,15 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { AuthRequest } from "../middleware/auth.middleware";
 import dotenv from "dotenv";
 dotenv.config();
 
 const prisma = new PrismaClient();
 
-export const listUser = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
+export const listUser = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   try {
     const response = await prisma.user.findMany({
       where: {
@@ -44,8 +44,8 @@ export const listUser = async (req: Request, res: Response) => {
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
+export const createUser = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   const { firstName, lastName, username, password, level } = req.body;
 
   try {
@@ -113,8 +113,8 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUser = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
+export const updateUser = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   const { id } = req.params;
   const { firstName, lastName, username, password, level } = req.body;
 
@@ -189,8 +189,8 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-export const removeUser = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
+export const removeUser = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   const { id } = req.params;
 
   try {
@@ -228,16 +228,14 @@ export const removeUser = async (req: Request, res: Response) => {
   }
 };
 
-export const infoUser = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
+export const infoUser = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
+    if (!req.user) {
       return res.status(401).json({
         statusCode: 401,
         success: false,
-        message: "No token provided",
+        message: "User not authenticated",
         meta: {
           timestamp: new Date().toISOString(),
           endpoint: req.originalUrl,
@@ -245,16 +243,9 @@ export const infoUser = async (req: Request, res: Response) => {
         },
       });
     }
-    const token = authHeader.split(" ")[1];
 
-    if (!process.env.SECRET_KEY) {
-      throw new Error("SECRET_KEY is not defined in environment variables");
-    }
-    const decoded = jwt.verify(token, process.env.SECRET_KEY) as JwtPayload & {
-      id: string;
-    };
     const user = await prisma.user.findFirst({
-      where: { id: decoded.id },
+      where: { id: req.user.id },
       select: {
         firstName: true,
         lastName: true,
@@ -288,26 +279,26 @@ export const infoUser = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUserInfo = async (req: Request, res: Response) => {
-  const requestId = uuidv4();
-
-  if (!process.env.SECRET_KEY) {
-    throw new Error("SECRET_KEY is not defined in environment variables");
-  }
-
+export const updateUserInfo = async (req: AuthRequest, res: Response) => {
+  const requestId = req.requestId || uuidv4();
   const { firstName, lastName, username, password } = req.body;
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
+
   try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY) as JwtPayload & {
-      id: string;
-    };
+    if (!req.user) {
+      return res.status(401).json({
+        statusCode: 401,
+        success: false,
+        message: "User not authenticated",
+        meta: {
+          timestamp: new Date().toISOString(),
+          endpoint: req.originalUrl,
+          requestId,
+        },
+      });
+    }
 
     const oldUser = await prisma.user.findFirst({
-      where: { id: decoded.id },
+      where: { id: req.user.id },
     });
 
     if (!oldUser) {
@@ -328,7 +319,7 @@ export const updateUserInfo = async (req: Request, res: Response) => {
       : oldUser.password;
 
     const response = await prisma.user.update({
-      where: { id: decoded.id },
+      where: { id: req.user.id },
       data: {
         firstName: firstName,
         lastName: lastName,

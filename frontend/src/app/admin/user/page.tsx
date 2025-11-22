@@ -6,7 +6,7 @@ import {
   removeUser,
   updateUser,
 } from "@/app/services/userService";
-import { extractErrorMessage } from "@/app/utils/errorHandler";
+import { extractErrorMessage, translateMessage } from "@/app/utils/errorHandler";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -57,11 +57,11 @@ export default function Page() {
         );
 
         if (response.success) {
-          toast.success(response.message);
+          toast.success(translateMessage(response.message));
           fetchData();
           handleCloseModal();
         } else {
-          toast.error(response.message);
+          toast.error(translateMessage(response.message));
         }
       } else {
         const response = await updateUser(
@@ -73,11 +73,11 @@ export default function Page() {
         );
 
         if (response.success) {
-          toast.success(response.message);
+          toast.success(translateMessage(response.message));
           fetchData();
           handleCloseModal();
         } else {
-          toast.error(response.message);
+          toast.error(translateMessage(response.message));
         }
       }
     } catch (error: unknown) {
@@ -118,7 +118,7 @@ export default function Page() {
         toast.success("ลบข้อมูลสำเร็จ");
         fetchData();
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));

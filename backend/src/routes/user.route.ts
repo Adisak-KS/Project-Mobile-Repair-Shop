@@ -7,16 +7,18 @@ import {
   updateUser,
   updateUserInfo,
 } from "../controllers/UserController";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/user/list", listUser);
-router.post("/user/create", createUser);
-router.put("/user/update/:id", updateUser);
-router.delete("/user/remove/:id", removeUser);
+// Admin routes - require authentication and admin level
+router.get("/user/list", authenticate, authorize(["admin"]), listUser);
+router.post("/user/create", authenticate, authorize(["admin"]), createUser);
+router.put("/user/update/:id", authenticate, authorize(["admin"]), updateUser);
+router.delete("/user/remove/:id", authenticate, authorize(["admin"]), removeUser);
 
-
-router.get("/user/info", infoUser);
-router.put("/user/update", updateUserInfo);
+// User routes - require authentication only
+router.get("/user/info", authenticate, infoUser);
+router.put("/user/update", authenticate, updateUserInfo);
 
 export default router;

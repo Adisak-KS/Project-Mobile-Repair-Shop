@@ -42,8 +42,12 @@ export default function RootLayout({
           position="top-right"
           reverseOrder={false}
           toastOptions={{
-            duration: 3000, // ปิดอัตโนมัติ 3 วินาที
+            duration: 3000,
           }}
+          containerStyle={{
+            top: 20,
+          }}
+          containerClassName="toast-container-limit"
         />
       </body>
     </html>

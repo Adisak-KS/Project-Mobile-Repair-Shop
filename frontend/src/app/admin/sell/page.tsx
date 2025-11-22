@@ -6,7 +6,8 @@ import {
   listSell,
   removeSell,
 } from "@/app/services/sellService";
-import { extractErrorMessage } from "@/app/utils/errorHandler";
+import { listProduct } from "@/app/services/buyService";
+import { extractErrorMessage, translateMessage } from "@/app/utils/errorHandler";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -16,16 +17,22 @@ export default function Page() {
   const [serial, setSerial] = useState("");
   const [price, setPrice] = useState(0);
   const [sells, setSells] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [id, setId] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showSellConfirm, setShowSellConfirm] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     fetchData();
+    fetchProducts();
   }, []);
 
   const fetchData = async () => {
@@ -44,16 +51,91 @@ export default function Page() {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const response = await listProduct(1, 1000); // Get all products
+      // Filter only products with status "inStock"
+      const instockProducts = response.data.filter(
+        (product: any) => product.status === "inStock"
+      );
+      setProducts(instockProducts);
+      setFilteredProducts(instockProducts);
+    } catch (error: unknown) {
+      toast.error(extractErrorMessage(error));
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setShowDropdown(true);
+
+    if (!value.trim()) {
+      setFilteredProducts(products);
+      return;
+    }
+
+    const searchLower = value.toLowerCase();
+    const filtered = products.filter((product: any) =>
+      product.serial?.toLowerCase().includes(searchLower) ||
+      product.name?.toLowerCase().includes(searchLower) ||
+      product.release?.toLowerCase().includes(searchLower) ||
+      product.color?.toLowerCase().includes(searchLower)
+    );
+
+    setFilteredProducts(filtered);
+  };
+
+  const handleProductSelect = (product: any) => {
+    setSelectedProduct(product);
+    setSerial(product.serial || "");
+    setPrice(product.price > 0 ? product.price : 0);
+    setSearchTerm(`${product.serial} - ${product.name} (${product.release})`);
+    setShowDropdown(false);
+  };
+
+  const handleInputFocus = () => {
+    setShowDropdown(true);
+  };
+
+  const handleInputBlur = () => {
+    // Delay to allow click on dropdown item
+    setTimeout(() => {
+      setShowDropdown(false);
+    }, 200);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setFilteredProducts(products);
+    setSelectedProduct(null);
+    setSerial("");
+    setPrice(0);
+    setShowDropdown(false);
+  };
+
   const handleSave = async () => {
+    // Validate before saving
+    if (!serial || serial.trim() === "") {
+      toast.error("กรุณาเลือกสินค้าก่อนเพิ่มลงรายการ");
+      return;
+    }
+
+    if (!price || price <= 0) {
+      toast.error("กรุณาระบุราคาขายที่ถูกต้อง");
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await createSell(serial, price);
 
       if (response.success) {
-        toast.success(response.message);
+        toast.success(translateMessage(response.message));
         fetchData();
+        // Reset form
+        handleClearSearch();
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
@@ -76,7 +158,7 @@ export default function Page() {
         toast.success("ลบข้อมูลสำเร็จ");
         fetchData();
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
@@ -100,12 +182,11 @@ export default function Page() {
       const response = await confirmSell();
 
       if (response.success) {
-        toast.success(response.message);
+        toast.success(translateMessage(response.message));
         fetchData();
-        setSerial("");
-        setPrice(0);
+        handleClearSearch();
       } else {
-        toast.error(response.message);
+        toast.error(translateMessage(response.message));
       }
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
@@ -141,41 +222,153 @@ export default function Page() {
 
       {/* Input Form Section */}
       <div className="shrink-0 mb-4 bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-        <div className="flex flex-col sm:flex-row gap-3 items-end">
-          <div className="flex-1 w-full">
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              <i className="fa-solid fa-barcode text-blue-600 mr-2"></i>
-              Serial
+        <div className="flex flex-col gap-3">
+          {/* Searchable Dropdown (Autocomplete) */}
+          <div className="w-full">
+            <label className="inline-flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+              <i className="fa-solid fa-mobile-screen-button text-blue-600 mr-2"></i>
+              <span>ค้นหาและเลือกสินค้า</span>
             </label>
-            <input
-              type="text"
-              value={serial}
-              onChange={(e) => setSerial(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-              placeholder="ระบุ Serial Number"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                className={`w-full py-2.5 border-2 border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm bg-white font-medium text-gray-700 shadow-sm ${searchTerm ? 'px-4 pr-10' : 'px-4 pl-10 pr-10'}`}
+              />
+              {!searchTerm && (
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              )}
+              {searchTerm && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+
+              {/* Dropdown Menu */}
+              {showDropdown && filteredProducts.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                  {filteredProducts.map((product: any) => (
+                    <div
+                      key={product.id}
+                      onClick={() => handleProductSelect(product)}
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-800 text-sm truncate">
+                            {product.name}
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <span className="text-xs text-gray-600">
+                              <i className="fa-solid fa-barcode mr-1"></i>
+                              {product.serial}
+                            </span>
+                            {product.release && (
+                              <span className="text-xs text-gray-600">
+                                <i className="fa-solid fa-tag mr-1"></i>
+                                {product.release}
+                              </span>
+                            )}
+                            {product.color && (
+                              <span className="text-xs text-gray-600">
+                                <i className="fa-solid fa-palette mr-1"></i>
+                                {product.color}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <p className="font-bold text-blue-600 text-sm">
+                            ฿{product.price?.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* No Results Message */}
+              {showDropdown && filteredProducts.length === 0 && searchTerm && (
+                <div className="absolute z-50 w-full mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-xl p-4 text-center">
+                  <i className="fa-solid fa-triangle-exclamation text-red-500 text-2xl mb-2"></i>
+                  <p className="text-sm text-gray-600">ไม่พบสินค้าที่ค้นหา</p>
+                  <p className="text-xs text-gray-500 mt-1">แสดงเฉพาะสินค้าที่มีในสตอกเท่านั้น</p>
+                </div>
+              )}
+
+              {/* No Products in Stock */}
+              {showDropdown && filteredProducts.length === 0 && !searchTerm && products.length === 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-xl p-4 text-center">
+                  <i className="fa-solid fa-box-open text-gray-400 text-2xl mb-2"></i>
+                  <p className="text-sm text-gray-600">ไม่มีสินค้าในสตอก</p>
+                </div>
+              )}
+            </div>
+            {filteredProducts.length > 0 && (
+              <p className="text-xs text-gray-600 mt-1">
+                <i className="fa-solid fa-circle-info mr-1"></i>
+                {searchTerm ? `พบ ${filteredProducts.length} รายการ` : `มีสินค้าในสตอก ${filteredProducts.length} รายการ`}
+              </p>
+            )}
           </div>
-          <div className="w-full sm:w-48">
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              <i className="fa-solid fa-dollar-sign text-green-600 mr-2"></i>
-              ราคา
-            </label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
-              placeholder="ระบุราคา"
-            />
+
+          {/* Product Details */}
+          {selectedProduct && (
+            <div className="bg-white rounded-lg p-3 border border-blue-200">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <div>
+                  <span className="text-gray-500">ชื่อสินค้า:</span>
+                  <p className="font-semibold text-gray-800">{selectedProduct.name}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">รุ่น:</span>
+                  <p className="font-semibold text-gray-800">{selectedProduct.release}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">สี:</span>
+                  <p className="font-semibold text-gray-800">{selectedProduct.color}</p>
+                </div>
+                <div>
+                  <span className="text-gray-500">Serial:</span>
+                  <p className="font-semibold text-gray-800 font-mono">{selectedProduct.serial}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Price Input and Submit Button */}
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="w-full sm:w-64">
+              <label className="inline-flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                <i className="fa-solid fa-dollar-sign text-green-600 mr-2"></i>
+                <span>ราคาขาย</span>
+              </label>
+              <input
+                type="number"
+                value={price || ''}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
+                placeholder="ระบุราคาขาย"
+                disabled={!serial}
+                min="1"
+              />
+            </div>
+            <button
+              onClick={handleSave}
+              disabled={isLoading || !serial || !price || price <= 0}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              <i className={`fa-solid ${isLoading ? "fa-spinner fa-spin" : "fa-cart-plus"}`}></i>
+              <span>{isLoading ? "กำลังเพิ่ม..." : "เพิ่มลงรายการ"}</span>
+            </button>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-          >
-            <i className={`fa-solid ${isLoading ? "fa-spinner fa-spin" : "fa-save"}`}></i>
-            <span>{isLoading ? "กำลังบันทึก..." : "บันทึก"}</span>
-          </button>
         </div>
       </div>
 

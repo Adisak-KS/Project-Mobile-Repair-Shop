@@ -1,9 +1,7 @@
-import axios from "axios";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+import api from "../configs/axios";
 
 export const listService = async () => {
-  const response = await axios.get(`${API_BASE_URL}/service/list`);
+  const response = await api.get("/service/list");
   return response.data;
 };
 
@@ -12,7 +10,7 @@ export const createService = async (
   price: number,
   remark: string
 ) => {
-  const response = await axios.post(`${API_BASE_URL}/service/create`, {
+  const response = await api.post("/service/create", {
     name,
     price,
     remark,
@@ -27,7 +25,7 @@ export const updateService = async (
   price: number,
   remark: string
 ) => {
-  const response = await axios.put(`${API_BASE_URL}/service/update/${id}`, {
+  const response = await api.put(`/service/update/${id}`, {
     name,
     price,
     remark,
@@ -36,6 +34,6 @@ export const updateService = async (
 };
 
 export const removeService = async (id: number) => {
-  const response = await axios.delete(`${API_BASE_URL}/service/remove/${id}`);
+  const response = await api.delete(`/service/remove/${id}`);
   return response.data;
 };
