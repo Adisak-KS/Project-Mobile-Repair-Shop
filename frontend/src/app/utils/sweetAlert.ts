@@ -33,25 +33,12 @@ export const showAlertConfirmDelete = async () => {
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
-    // cancelButtonColor: "#3085d6",
+    cancelButtonColor: "#6b7280",
     confirmButtonText: "ลบข้อมูลเลย",
     cancelButtonText: "ยกเลิก",
   });
 
-  if (result.isConfirmed) {
-    // กดยืนยัน
-    Swal.fire({
-      icon: "success",
-      title: "ลบข้อมูลสำเร็จ",
-      text: "ข้อมูลถูกลบเรียบร้อยแล้ว",
-      timer: 3000,
-      showConfirmButton: false,
-    });
-    return true;
-  } else {
-    // กดยกเลิก
-    return false;
-  }
+  return result.isConfirmed;
 };
 
 export const showAlertConfirmSell = async () => {

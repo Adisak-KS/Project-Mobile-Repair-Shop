@@ -30,6 +30,17 @@ input {
   @apply w-full p-2 rounded-md border border-gray-600 focus:ring-2 focus:outline-none focus:ring-gray-300;
 }
 
+/* Hide browser's default password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-caps-lock-indicator {
+  display: none;
+}
+
 .form-control {
   @apply p-2 rounded-md border border-gray-600 w-full;
 }
