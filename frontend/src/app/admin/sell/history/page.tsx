@@ -4,25 +4,40 @@ import { historySell } from "@/app/services/sellService";
 import { extractErrorMessage } from "@/app/utils/errorHandler";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+interface SellHistory {
+  id: string;
+  productId: string;
+  price: number;
+  status: string;
+  payDate: string;
+  createdAt: string;
+  product: {
+    serial: string;
+    name: string;
+    customerName: string;
+    customerPhone: string;
+  };
+}
+
 export default function Page() {
-  const [sellList, setSellList] = useState<any[]>([]);
+  const [sellList, setSellList] = useState<SellHistory[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const result = await historySell();
       setSellList(result.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div className="flex flex-col h-full">
@@ -70,7 +85,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {sellList.map((item: any, index: number) => (
+              {sellList.map((item: SellHistory, index: number) => (
                 <tr
                   key={index}
                   className={`hover:bg-blue-50 transition-colors ${

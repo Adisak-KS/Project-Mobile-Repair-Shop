@@ -27,7 +27,7 @@ export const checkAuth = async (): Promise<{
     }
 
     return { isAuthenticated: false, userLevel: null };
-  } catch (error) {
+  } catch {
     // Token invalid หรือ expired
     return { isAuthenticated: false, userLevel: null };
   }

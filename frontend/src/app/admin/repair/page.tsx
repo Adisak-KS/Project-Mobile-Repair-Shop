@@ -12,13 +12,23 @@ import {
   updateService,
 } from "@/app/services/serviceService";
 
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  remark: string;
+  payDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Page() {
   const [isShowModal, setIsShowModal] = useState(false);
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
   const [remark, setRemark] = useState("");
   const [id, setId] = useState("");
-  const [repairs, setRepairs] = useState([]);
+  const [repairs, setRepairs] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -64,10 +74,10 @@ export default function Page() {
 
   const handleUpdate = async (id: number) => {
     try {
-      const repair = repairs.find((repair: any) => repair.id === id) as any;
+      const repair = repairs.find((repair: Service) => repair.id === id);
 
       if (repair) {
-        setId(repair.id);
+        setId(String(repair.id));
         setName(repair.name);
         setPrice(repair.price);
         setRemark(repair.remark);
@@ -174,7 +184,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {repairs.map((repair: any, index: number) => (
+              {repairs.map((repair: Service, index: number) => (
                 <tr
                   key={repair.id}
                   className={`hover:bg-blue-50 transition-colors ${

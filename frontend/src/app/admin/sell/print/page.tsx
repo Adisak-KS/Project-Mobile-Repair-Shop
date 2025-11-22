@@ -3,19 +3,39 @@
 import { infoSell } from "@/app/services/sellService";
 import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, Suspense } from "react";
 
-export default function Page() {
+interface SellInfo {
+  id: string;
+  productId: string;
+  price: number;
+  status: string;
+  payDate: string;
+  createdAt: string;
+  remark?: string;
+  product: {
+    serial: string;
+    name: string;
+    release: string;
+    color: string;
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+  };
+  customer?: {
+    name: string;
+    phone?: string;
+    address?: string;
+  };
+}
+
+function PrintContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const [sell, setSell] = useState<any>(null);
+  const [sell, setSell] = useState<SellInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async (): Promise<void> => {
+  const fetchData = useCallback(async (): Promise<void> => {
     if (!id) return;
     try {
       setIsLoading(true);
@@ -30,7 +50,7 @@ export default function Page() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
   const printDocument = () => {
     // Add Css Style for print
@@ -125,6 +145,10 @@ export default function Page() {
       window.print();
     }, 200);
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (isLoading) {
     return (
@@ -289,5 +313,22 @@ export default function Page() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <i className="fa-solid fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p className="text-gray-600 font-medium">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      }
+    >
+      <PrintContent />
+    </Suspense>
   );
 }

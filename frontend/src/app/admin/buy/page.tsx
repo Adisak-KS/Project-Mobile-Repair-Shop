@@ -13,6 +13,22 @@ import {
 import { validateCreateBuy } from "@/app/utils/validation";
 import { extractErrorMessage, translateMessage } from "@/app/utils/errorHandler";
 
+interface Product {
+  id: string;
+  serial: string;
+  name: string;
+  release: string;
+  color: string;
+  price: number;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  remark: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +45,7 @@ export default function Page() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [remark, setRemark] = useState("");
 
-  const [products, setProducts] = useState<any[]>([]); // สินค้าที่ซื้อ
+  const [products, setProducts] = useState<Product[]>([]); // สินค้าที่ซื้อ
   const [id, setId] = useState<string | null>(null); // id เอาไว้ Update รายการ
   const [qty, setQty] = useState<number | "">(1);
 
@@ -132,7 +148,7 @@ export default function Page() {
   };
 
   const handleUpdate = async (id: string) => {
-    const product = products.find((item: any) => item.id === id);
+    const product = products.find((item: Product) => item.id === id);
 
     if (!product) {
       toast.error("ไม่พบ ID ของรายการ");
@@ -211,7 +227,7 @@ export default function Page() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       toast.success(`Export Excel ${currentPageOnly ? 'หน้านี้' : 'ทั้งหมด'} สำเร็จ`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
       console.log("Error Export Excel:", error);
     } finally {
@@ -599,7 +615,7 @@ export default function Page() {
                   </td>
                 </tr>
               ) : (
-                products.map((item: any, index: number) => (
+                products.map((item: Product, index: number) => (
                   <tr
                     key={item.id}
                     className={`hover:bg-blue-50/50 transition-all duration-150 ${

@@ -1,11 +1,9 @@
 "use client";
 import { dashboardSell } from "@/app/services/sellService";
 import { extractErrorMessage } from "@/app/utils/errorHandler";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -16,12 +14,22 @@ import {
   Bar,
 } from "recharts";
 
+interface ChartData {
+  name: string;
+  income: number;
+}
+
+interface IncomePerMonth {
+  month: string;
+  income: string | number;
+}
+
 export default function Page() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<ChartData[]>([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalRepair, setTotalRepair] = useState(0);
   const [totalSale, setTotalSale] = useState(0);
-  const [listYear, setListYear] = useState<any[]>([]);
+  const [listYear, setListYear] = useState<number[]>([]);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
@@ -30,11 +38,7 @@ export default function Page() {
     setListYear(years);
   }, []);
 
-  useEffect(() => {
-    fetchData(currentYear);
-  }, [currentYear]);
-
-  const fetchData = async (year?: number) => {
+  const fetchData = useCallback(async (year?: number) => {
     const selectedYear = year ?? currentYear;
     try {
       const response = await dashboardSell(selectedYear);
@@ -43,7 +47,7 @@ export default function Page() {
       setTotalRepair(response.data.totalRepair);
       setTotalSale(response.data.totalSale);
 
-      const chartData = response.data.incomePerMonth.map((item: any) => ({
+      const chartData = response.data.incomePerMonth.map((item: IncomePerMonth) => ({
         name: item.month,
         income: Number(item.income) || 0,
       }));
@@ -52,7 +56,11 @@ export default function Page() {
     } catch (error: unknown) {
       return toast.error(extractErrorMessage(error));
     }
-  };
+  }, [currentYear]);
+
+  useEffect(() => {
+    fetchData(currentYear);
+  }, [currentYear, fetchData]);
 
   const box = (color: string, icon: string, title: string, value: string) => {
     return (

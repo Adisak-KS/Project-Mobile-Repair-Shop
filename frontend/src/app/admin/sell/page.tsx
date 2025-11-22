@@ -13,15 +13,37 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Modal from "@/app/components/ui/modal";
 
+interface Product {
+  id: string;
+  serial: string;
+  name: string;
+  release: string;
+  color: string;
+  price: number;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  remark: string;
+  status: string;
+}
+
+interface Sell {
+  id: number;
+  productId: string;
+  price: number;
+  status: string;
+  payDate: string;
+  product: Product;
+}
+
 export default function Page() {
   const [serial, setSerial] = useState("");
   const [price, setPrice] = useState(0);
-  const [sells, setSells] = useState([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+  const [sells, setSells] = useState<Sell[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [id, setId] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [totalAmount, setTotalAmount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -56,7 +78,7 @@ export default function Page() {
       const response = await listProduct(1, 1000); // Get all products
       // Filter only products with status "inStock"
       const instockProducts = response.data.filter(
-        (product: any) => product.status === "inStock"
+        (product: Product) => product.status === "inStock"
       );
       setProducts(instockProducts);
       setFilteredProducts(instockProducts);
@@ -75,7 +97,7 @@ export default function Page() {
     }
 
     const searchLower = value.toLowerCase();
-    const filtered = products.filter((product: any) =>
+    const filtered = products.filter((product: Product) =>
       product.serial?.toLowerCase().includes(searchLower) ||
       product.name?.toLowerCase().includes(searchLower) ||
       product.release?.toLowerCase().includes(searchLower) ||
@@ -85,7 +107,7 @@ export default function Page() {
     setFilteredProducts(filtered);
   };
 
-  const handleProductSelect = (product: any) => {
+  const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
     setSerial(product.serial || "");
     setPrice(product.price > 0 ? product.price : 0);
@@ -253,7 +275,7 @@ export default function Page() {
               {/* Dropdown Menu */}
               {showDropdown && filteredProducts.length > 0 && (
                 <div className="absolute z-50 w-full mt-1 bg-white border-2 border-blue-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                  {filteredProducts.map((product: any) => (
+                  {filteredProducts.map((product: Product) => (
                     <div
                       key={product.id}
                       onClick={() => handleProductSelect(product)}
@@ -397,7 +419,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {sells.map((item: any, index: number) => (
+              {sells.map((item: Sell, index: number) => (
                 <tr
                   key={item.id}
                   className={`hover:bg-blue-50 transition-colors ${

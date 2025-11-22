@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Environment
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Build output
+dist
+
+# Logs
+logs
+*.log
+
+# Testing
+coverage
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+
+# Uploads (will be mounted as volume)
+uploads
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md

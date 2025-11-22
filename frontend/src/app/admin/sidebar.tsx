@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Modal from "../components/ui/modal";
-import { updateUser, updateUserInfo, userInfo } from "../services/userService";
+import { updateUserInfo, userInfo } from "../services/userService";
 import { removeAccessToken } from "../services/tokenService";
 import toast from "react-hot-toast";
 import { extractErrorMessage, translateMessage } from "../utils/errorHandler";

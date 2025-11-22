@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import {
-  showAlertError,
-  showAlertSuccess,
   showAlertWarning,
 } from "../utils/sweetAlert";
 import { SignUp } from "../services/authService";

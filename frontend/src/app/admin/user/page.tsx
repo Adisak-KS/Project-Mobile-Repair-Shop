@@ -10,8 +10,19 @@ import { extractErrorMessage, translateMessage } from "@/app/utils/errorHandler"
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  level: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Page() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isShowModal, setIsShowModal] = useState(false);
   const [id, setId] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -20,7 +31,7 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [level, setLevel] = useState("User");
-  const [levelList, setLevelList] = useState(["Admin", "User"]);
+  const levelList = ["Admin", "User"];
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -89,7 +100,12 @@ export default function Page() {
 
   const handleEdit = async (id: string) => {
     try {
-      const user = users.find((user: any) => user.id === id) as any;
+      const user = users.find((u: User) => u.id === id);
+
+      if (!user) {
+        toast.error("ไม่พบผู้ใช้");
+        return;
+      }
 
       setId(user.id);
       setFirstName(user.firstName);
@@ -203,7 +219,7 @@ export default function Page() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user: any, index: number) => (
+              {users.map((user: User, index: number) => (
                 <tr
                   key={user.id}
                   className={`hover:bg-blue-50 transition-colors ${
@@ -428,7 +444,7 @@ export default function Page() {
               onChange={(e) => setLevel(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm"
             >
-              {levelList.map((item: any) => (
+              {levelList.map((item: string) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
