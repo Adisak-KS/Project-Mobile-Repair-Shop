@@ -1,6 +1,32 @@
-"# Mobile Repair Shop - ระบบจัดการร้านซ่อมมือถือ
+"<div align="center">
 
-ระบบจัดการร้านซ่อมมือถือแบบครบวงจร พัฒนาด้วย Node.js, Express, Next.js และ MongoDB
+# 📱 Mobile Repair Shop - ระบบจัดการร้านซ่อมมือถือ
+
+### ระบบจัดการร้านซ่อมมือถือแบบครบวงจร พัฒนาด้วย Node.js, Express, Next.js และ MongoDB
+
+[![Node.js](https://img.shields.io/badge/Node.js-20-green.svg)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15.5-black.svg)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+
+</div>
+
+---
+
+## 📸 Preview
+
+<div align="center">
+
+### หน้า Login
+![Login Page](./previews/01_sigin.png)
+
+### Dashboard
+![Dashboard](./previews/02_dashboard.png)
+
+</div>
+
+---
 
 ## 🚀 Features
 
@@ -16,22 +42,33 @@
 
 ## 🛠️ Technology Stack
 
+<table>
+<tr>
+<td width="50%">
+
 ### Backend
-- Node.js 20
-- Express.js
-- TypeScript
-- Prisma ORM
-- MongoDB (Atlas)
-- JWT Authentication
-- Swagger (API Documentation)
+- 🟢 **Node.js** 20
+- ⚡ **Express.js** - Web Framework
+- 📘 **TypeScript** - Type Safety
+- 🔷 **Prisma ORM** - Database ORM
+- 🍃 **MongoDB Atlas** - Cloud Database
+- 🔐 **JWT** - Authentication
+- 📖 **Swagger** - API Documentation
+
+</td>
+<td width="50%">
 
 ### Frontend
-- Next.js 15.5
-- React 19
-- TypeScript
-- Tailwind CSS v4
-- Recharts (Charts & Analytics)
-- Axios
+- ▲ **Next.js** 15.5 - React Framework
+- ⚛️ **React** 19 - UI Library
+- 📘 **TypeScript** - Type Safety
+- 🎨 **Tailwind CSS** v4 - Styling
+- 📊 **Recharts** - Charts & Analytics
+- 🔄 **Axios** - HTTP Client
+
+</td>
+</tr>
+</table>
 
 ## 📋 Prerequisites
 
@@ -41,6 +78,8 @@
 - MongoDB Atlas account (สำหรับ database)
 
 ## 🐳 การรันด้วย Docker (แนะนำ)
+
+> 💡 **วิธีนี้เหมาะสำหรับ:** การรันแอปพลิเคชันแบบง่ายและรวดเร็ว ไม่ต้องติดตั้ง dependencies
 
 ### 1. Clone โปรเจกต์
 
@@ -89,9 +128,13 @@ docker-compose up -d --build
 
 ### 4. เข้าใช้งานแอปพลิเคชัน
 
-- **Frontend**: http://localhost:4001
-- **Backend API**: http://localhost:4000
-- **API Documentation (Swagger)**: http://localhost:4000/api-docs
+เมื่อ containers รันสำเร็จ เข้าใช้งานได้ที่:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🌐 **Frontend** | http://localhost:4001 | หน้าเว็บแอปพลิเคชัน |
+| 🔌 **Backend API** | http://localhost:4000 | REST API Server |
+| 📖 **Swagger Docs** | http://localhost:4000/api-docs | API Documentation |
 
 ### คำสั่ง Docker ที่มีประโยชน์
 
@@ -120,26 +163,28 @@ docker-compose up backend
 
 ## 💻 การรันแบบ Local (ไม่ใช้ Docker)
 
-### Backend
+> 💡 **วิธีนี้เหมาะสำหรับ:** Development และการแก้ไขโค้ด
+
+### Backend Setup
 
 ```bash
 cd backend
-npm install
-npx prisma generate
-npm run dev
+npm install                # ติดตั้ง dependencies
+npx prisma generate        # Generate Prisma Client
+npm run dev                # รัน development server
 ```
 
-Backend จะรันที่: http://localhost:4000
+✅ Backend จะรันที่: **http://localhost:4000**
 
-### Frontend
+### Frontend Setup
 
 ```bash
 cd frontend
-npm install
-npm run dev
+npm install                # ติดตั้ง dependencies
+npm run dev                # รัน development server
 ```
 
-Frontend จะรันที่: http://localhost:4001
+✅ Frontend จะรันที่: **http://localhost:4001**
 
 ## 📁 โครงสร้างโปรเจกต์
 
@@ -170,10 +215,16 @@ Mobile-Repair/
 └── README.md
 ```
 
-## 🔑 Default User Credentials
+## 🔑 การสร้าง User แรก
 
-หลังจากรันครั้งแรก ให้สมัครสมาชิกผ่านหน้า `/signup` หรือใช้ API endpoint:
+หลังจากรันแอปพลิเคชันครั้งแรก คุณสามารถสมัครสมาชิกได้ 2 วิธี:
 
+### วิธีที่ 1: ผ่านหน้าเว็บ (แนะนำ)
+1. เปิดเบราว์เซอร์ไปที่ http://localhost:4001
+2. คลิกที่ปุ่ม "สมัครสมาชิก" หรือไปที่ `/signup`
+3. กรอกข้อมูลและสร้างบัญชี
+
+### วิธีที่ 2: ผ่าน API
 ```bash
 POST http://localhost:4000/api/v1/auth/signup
 Content-Type: application/json
@@ -187,26 +238,46 @@ Content-Type: application/json
 }
 ```
 
+> **หมายเหตุ:** `level` สามารถเป็น `"admin"` หรือ `"user"` ตามสิทธิ์ที่ต้องการ
+
 ## 📚 API Documentation
 
-ดู API Documentation ได้ที่:
-- **Swagger UI**: http://localhost:4000/api-docs
+เอกสาร API ครบถ้วนพร้อม Interactive Testing:
 
-## 🔧 การแก้ไขปัญหา
+- 📖 **Swagger UI**: [http://localhost:4000/api-docs](http://localhost:4000/api-docs)
 
-### ปัญหา: Container ไม่สามารถเชื่อมต่อ MongoDB
+Swagger UI ช่วยให้คุณ:
+- ✅ ดูรายละเอียด API endpoints ทั้งหมด
+- ✅ ทดสอบ API ได้ทันทีผ่านเว็บ
+- ✅ ดู Request/Response schemas
+- ✅ ดูตัวอย่างการใช้งาน
 
-- ตรวจสอบว่า `DATABASE_URL` ใน `.env` ถูกต้อง
-- ตรวจสอบว่า MongoDB Atlas อนุญาต IP address ของคุณ
+## 🔧 Troubleshooting
 
-### ปัญหา: Frontend ไม่สามารถเรียก Backend API
+<details>
+<summary><b>❌ Container ไม่สามารถเชื่อมต่อ MongoDB</b></summary>
 
-- ตรวจสอบว่า `NEXT_PUBLIC_API_URL` ถูกต้องใน `frontend/.env`
-- ตรวจสอบว่า backend container กำลังรันอยู่: `docker-compose ps`
+**วิธีแก้:**
+- ✅ ตรวจสอบว่า `DATABASE_URL` ใน `.env` ถูกต้อง
+- ✅ ตรวจสอบว่า MongoDB Atlas อนุญาต IP address ของคุณ (Network Access)
+- ✅ ลอง whitelist IP `0.0.0.0/0` สำหรับการทดสอบ
 
-### ปัญหา: Port conflicts
+</details>
 
-ถ้า port 4000 หรือ 4001 ถูกใช้งานอยู่แล้ว แก้ไขใน `docker-compose.yml`:
+<details>
+<summary><b>❌ Frontend ไม่สามารถเรียก Backend API</b></summary>
+
+**วิธีแก้:**
+- ✅ ตรวจสอบว่า `NEXT_PUBLIC_API_URL` ถูกต้อง (ควรเป็น `http://localhost:4000/api/v1`)
+- ✅ ตรวจสอบว่า backend container กำลังรันอยู่: `docker-compose ps`
+- ✅ ดู logs ของ backend: `docker-compose logs backend`
+
+</details>
+
+<details>
+<summary><b>❌ Port Conflicts (พอร์ตชนกัน)</b></summary>
+
+ถ้า port 4000 หรือ 4001 ถูกใช้งานอยู่แล้ว แก้ไขใน [docker-compose.yml](docker-compose.yml):
 
 ```yaml
 services:
@@ -218,14 +289,37 @@ services:
       - "5001:4001"  # เปลี่ยน host port เป็น 5001
 ```
 
+**อย่าลืม:** ถ้าเปลี่ยน port ต้องแก้ `NEXT_PUBLIC_API_URL` ด้วย
+
+</details>
+
+<details>
+<summary><b>❌ Docker Container ไม่ Update หลังแก้โค้ด</b></summary>
+
+**วิธีแก้:**
+```bash
+docker-compose down
+docker-compose up --build
+```
+
+</details>
+
+## 🤝 Contributing
+
+Pull requests are welcome! สำหรับการเปลี่ยนแปลงที่สำคัญ กรุณาเปิด issue เพื่อพูดคุยถึงสิ่งที่คุณต้องการเปลี่ยนแปลงก่อน
+
 ## 📝 License
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Author
-
-Mobile Repair Shop Management System
-
 ---
 
-Made with ❤️ using Next.js and Express.js" 
+<div align="center">
+
+### Made with ❤️ using Next.js and Express.js
+
+**Mobile Repair Shop Management System**
+
+⭐ ถ้าชอบโปรเจกต์นี้ อย่าลืมกด Star นะครับ!
+
+</div>" 
